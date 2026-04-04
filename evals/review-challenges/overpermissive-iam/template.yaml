@@ -1,0 +1,340 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Acme Commerce Platform — serverless order processing backend.
+  Deploys API Gateway, Lambda functions, DynamoDB tables, and S3 buckets
+  for order ingestion, processing, and reporting.
+
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues: [dev, staging, prod]
+    Default: prod
+
+  CrossAccountId:
+    Type: String
+    Description: AWS account ID of the data replication target account
+    Default: "987654321098"
+
+  AppName:
+    Type: String
+    Default: acme-commerce
+
+Globals:
+  Function:
+    Runtime: python3.12
+    MemorySize: 256
+    Timeout: 30
+    Environment:
+      Variables:
+        ENVIRONMENT: !Ref Environment
+        APP_NAME: !Ref AppName
+
+# ─────────────────────────────────────────────
+# DynamoDB Tables
+# ─────────────────────────────────────────────
+Resources:
+
+  OrdersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AppName}-orders-${Environment}"
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+      AttributeDefinitions:
+        - AttributeName: orderId
+          AttributeType: S
+        - AttributeName: customerId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: orderId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: customer-index
+          KeySchema:
+            - AttributeName: customerId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  ReportsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AppName}-reports-${Environment}"
+      BillingMode: PAY_PER_REQUEST
+      SSESpecification:
+        SSEEnabled: true
+      AttributeDefinitions:
+        - AttributeName: reportId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: reportId
+          KeyType: HASH
+
+# ─────────────────────────────────────────────
+# S3 Buckets
+# ─────────────────────────────────────────────
+
+  OrderArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AppName}-order-artifacts-${Environment}-${AWS::AccountId}"
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # Bucket for storing customer profile exports and PII
+  UserDataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AppName}-user-data-${Environment}-${AWS::AccountId}"
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      # Note: PublicAccessBlockConfiguration intentionally omitted for
+      # "partner portal compatibility" -- revisit after Q3 partner integration
+
+  # DEFECT (Medium): Public read allowed on bucket containing PII/user data
+  UserDataBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref UserDataBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowPartnerPortalRead
+            Effect: Allow
+            Principal: "*"
+            Action: s3:GetObject
+            Resource: !Sub "arn:aws:s3:::${UserDataBucket}/*"
+
+# ─────────────────────────────────────────────
+# IAM Roles
+# ─────────────────────────────────────────────
+
+  # DEFECT (Easy): Wildcard action and resource -- grants full AWS access
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AppName}-lambda-execution-${Environment}"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaOperationsPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: AllOperations
+                Effect: Allow
+                Action: "*"
+                Resource: "*"
+
+  # CONTROL: Properly scoped read-only DynamoDB access -- should NOT be flagged
+  ReportsReadRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AppName}-reports-read-${Environment}"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: ReportsTableReadOnly
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: ReadReportsTable
+                Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                Resource:
+                  - !GetAtt ReportsTable.Arn
+
+  # DEFECT (Hard): Cross-account trust allows ANY principal in the target account,
+  # not just the specific replication service role. Any IAM entity in account
+  # 987654321098 can assume this role and read/write production data.
+  CrossAccountReplicationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AppName}-cross-account-replication-${Environment}"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowCrossAccountReplication
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${CrossAccountId}:root"
+            Action: sts:AssumeRole
+            # Missing Condition block -- no ExternalId, no MFA requirement,
+            # no restriction to a specific replication role ARN
+      Policies:
+        - PolicyName: ReplicationAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: ReadOrdersForReplication
+                Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:DescribeTable
+                Resource: !GetAtt OrdersTable.Arn
+              - Sid: WriteReplicationArtifacts
+                Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - !GetAtt OrderArtifactsBucket.Arn
+                  - !Sub "${OrderArtifactsBucket.Arn}/*"
+
+# ─────────────────────────────────────────────
+# Lambda Functions
+# ─────────────────────────────────────────────
+
+  # DEFECT (Medium): DB_PASSWORD hardcoded in plaintext environment variable.
+  # Should use Secrets Manager or SSM Parameter Store with SecureString.
+  ProcessorFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${AppName}-processor-${Environment}"
+      Description: Processes incoming orders, writes to DynamoDB, triggers downstream events
+      Handler: handler.process_order
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: !Sub "${AppName}-deploy-artifacts-${AWS::AccountId}"
+        S3Key: !Sub "lambdas/processor/processor-${Environment}.zip"
+      Environment:
+        Variables:
+          ORDERS_TABLE: !Ref OrdersTable
+          USER_DATA_BUCKET: !Ref UserDataBucket
+          ARTIFACTS_BUCKET: !Ref OrderArtifactsBucket
+          DB_HOST: !Sub "aurora-${AppName}-${Environment}.cluster-cxyz1234.us-east-1.rds.amazonaws.com"
+          DB_NAME: acme_commerce
+          DB_USER: app_writer
+          DB_PASSWORD: "Acm3C0mm3rc3!Pr0d#2024"
+          STRIPE_WEBHOOK_SECRET: "whsec_placeholder_replace_before_deploy"
+      Layers:
+        - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:acme-shared-utils:7"
+      Tracing: Active
+
+  ReportsFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${AppName}-reports-${Environment}"
+      Description: Generates order reports from DynamoDB for internal dashboard
+      Handler: handler.generate_report
+      Role: !GetAtt ReportsReadRole.Arn
+      Code:
+        S3Bucket: !Sub "${AppName}-deploy-artifacts-${AWS::AccountId}"
+        S3Key: !Sub "lambdas/reports/reports-${Environment}.zip"
+      Environment:
+        Variables:
+          REPORTS_TABLE: !Ref ReportsTable
+          ORDERS_TABLE: !Ref OrdersTable
+      Tracing: Active
+
+# ─────────────────────────────────────────────
+# API Gateway
+# ─────────────────────────────────────────────
+
+  OrdersApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub "${AppName}-orders-api-${Environment}"
+      Description: Order ingestion and status API for Acme Commerce Platform
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  OrdersApiResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref OrdersApi
+      ParentId: !GetAtt OrdersApi.RootResourceId
+      PathPart: orders
+
+  OrdersPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref OrdersApi
+      ResourceId: !Ref OrdersApiResource
+      HttpMethod: POST
+      AuthorizationType: AWS_IAM
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub
+          - "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FunctionArn}/invocations"
+          - FunctionArn: !GetAtt ProcessorFunction.Arn
+
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: OrdersPostMethod
+    Properties:
+      RestApiId: !Ref OrdersApi
+      StageName: !Ref Environment
+
+  ProcessorLambdaApiPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt ProcessorFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/${OrdersApi}/stages/${Environment}"
+
+# ─────────────────────────────────────────────
+# Outputs
+# ─────────────────────────────────────────────
+
+Outputs:
+  ApiEndpoint:
+    Description: Orders API endpoint URL
+    Value: !Sub "https://${OrdersApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/orders"
+    Export:
+      Name: !Sub "${AppName}-api-endpoint-${Environment}"
+
+  OrdersTableArn:
+    Description: ARN of the orders DynamoDB table
+    Value: !GetAtt OrdersTable.Arn
+    Export:
+      Name: !Sub "${AppName}-orders-table-arn-${Environment}"
+
+  UserDataBucketName:
+    Description: Name of the user data S3 bucket
+    Value: !Ref UserDataBucket
+    Export:
+      Name: !Sub "${AppName}-user-data-bucket-${Environment}"
+
+  CrossAccountRoleArn:
+    Description: ARN of the cross-account replication role (share with data team)
+    Value: !GetAtt CrossAccountReplicationRole.Arn
+    Export:
+      Name: !Sub "${AppName}-cross-account-role-arn-${Environment}"

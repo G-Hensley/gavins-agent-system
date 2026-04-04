@@ -49,6 +49,7 @@ Use these agents proactively — don't wait for me to ask:
 | Test strategy, E2E, load tests | `qa-engineer` agent |
 | Documentation | `doc-writer` agent (Haiku) |
 | Security review | Dispatch the RIGHT specialist: `frontend-security-reviewer`, `backend-security-reviewer`, `cloud-security-reviewer`, or `appsec-reviewer` |
+| Security assessment needed before implementation | `threat-modeler` agent (Opus) |
 | Multi-task implementation | Use `subagent-driven-development` skill with `implementer` agent per task |
 
 ## Security

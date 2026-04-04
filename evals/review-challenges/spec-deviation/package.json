@@ -1,0 +1,13 @@
+{
+  "name": "spec-deviation-challenge",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Eval challenge: detect spec deviations in a Task Manager API",
+  "main": "src/routes.js",
+  "scripts": {
+    "start": "node src/routes.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
