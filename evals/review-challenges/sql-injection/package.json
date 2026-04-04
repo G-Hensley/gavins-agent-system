@@ -1,0 +1,14 @@
+{
+  "name": "product-catalog-api",
+  "version": "1.0.0",
+  "description": "Simple product catalog API",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "express": "^4.21.0"
+  }
+}

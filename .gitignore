@@ -40,5 +40,8 @@ tasks/
 # Project-specific memory (lives per-machine in ~/.claude/projects/)
 projects/
 
+# Eval run results (machine-local, generated output)
+evals/results/
+
 # Local settings override
 .claude/

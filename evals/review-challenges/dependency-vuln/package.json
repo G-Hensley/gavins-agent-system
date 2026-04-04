@@ -1,0 +1,29 @@
+{
+  "name": "docproc-api",
+  "version": "2.4.1",
+  "description": "Document processing and template rendering API",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "lint": "eslint src/",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "express": "4.17.1",
+    "helmet": "7.1.0",
+    "jsonwebtoken": "8.5.1",
+    "lodash": "4.17.20",
+    "minimist": "1.2.5",
+    "uuid": "9.0.1",
+    "winston": "3.11.0",
+    "zod": "3.22.4"
+  },
+  "devDependencies": {
+    "eslint": "8.56.0",
+    "vitest": "1.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

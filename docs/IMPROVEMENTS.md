@@ -387,6 +387,46 @@ Store as JSON in `evals/results/YYYY-MM-DD/`. One file per eval run with nested 
 
 ---
 
+## 14. Threat Modeler Agent & Design-Time Security Gap
+
+The `threat-modeling` skill exists (VAST methodology, STRIDE categories, dispatches to security reviewers) and the skill-router knows about it, but **no agent loads or executes it**. It's the only skill in the router without a natural agent pairing.
+
+### The Gap
+
+The current security coverage is strong at code-time (4 security reviewers) and build-time (devsecops-engineer), but weak at design-time. The `architect` agent doesn't load the `security` or `threat-modeling` skills, so architecture decisions get made without security input. Security review only happens post-implementation — by then, architectural flaws are expensive to fix.
+
+```
+Current:  architect → implementers → security reviewers (too late for architectural issues)
+Proposed: architect → threat-modeler → implementers → security reviewers
+```
+
+### Proposed: `threat-modeler` Agent
+
+An orchestrator agent (Opus) that owns the full VAST lifecycle:
+
+1. Takes the architect's design doc as input
+2. Maps system boundaries, data flows, and trust boundaries
+3. Identifies threats using STRIDE at each trust boundary crossing
+4. Proposes specific mitigations with severity scores
+5. Dispatches domain-specific security reviewers to validate mitigations
+6. Produces a threat model document that lives alongside the architecture doc
+
+Skills: `threat-modeling`, `security`
+Model: Opus (needs architectural reasoning)
+Fits in the pipeline between `architect` and `implementer`
+
+### Also Consider
+
+- **Load `security` skill on the `architect` agent** — even without a threat-modeler, the architect should at least be security-aware when making design decisions. Right now it isn't.
+- **Add threat-modeler to the dispatch table** — "Security assessment needed before implementation" → `threat-modeler` agent
+- **Add to eval suite** — Tier 3 projects should include a threat modeling step; review challenges could include an architecture doc with obvious security gaps (public S3 + no auth on admin endpoints) to test whether the agent catches design-level flaws
+
+### Parallelism Note
+
+The threat-modeler is sequential with the architect (needs the design doc) but can run in parallel with the plan-reviewer and architecture-reviewer since they're reviewing different aspects of the same design.
+
+---
+
 ## Priority Order
 
 Suggested sequence for working through these:
@@ -395,10 +435,11 @@ Suggested sequence for working through these:
 2. **Agent memory directories** (#3) — 5-minute task, removes friction
 3. **CONTEXT.md** (#5) — foundational context that other improvements reference
 4. **Agent parallelism map** (#12) — document before building evals so dispatch is correct
-5. **Eval suite structure** (#1) — biggest impact, start with Tier 1
-6. **Token tracking** (#13) — wire up before running evals so you capture data from day one
-7. **Review challenges** (#1) — seed the security reviewer tests
-8. **Handoff protocol** (#8) — document as you build evals
-9. **Failure modes** (#9) — document as you encounter them in evals
-10. **Improvements backlog** (#4) — flows naturally from running evals
-11. **Everything else** — tackle as the system matures
+5. **Threat-modeler agent + architect security loading** (#14) — closes the design-time security gap before you start building eval projects that should exercise it
+6. **Eval suite structure** (#1) — biggest impact, start with Tier 1
+7. **Token tracking** (#13) — wire up before running evals so you capture data from day one
+8. **Review challenges** (#1) — seed the security reviewer tests
+9. **Handoff protocol** (#8) — document as you build evals
+10. **Failure modes** (#9) — document as you encounter them in evals
+11. **Improvements backlog** (#4) — flows naturally from running evals
+12. **Everything else** — tackle as the system matures
