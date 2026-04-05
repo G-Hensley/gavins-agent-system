@@ -2,7 +2,7 @@
 
 Current status of improvements from [IMPROVEMENTS.md](./IMPROVEMENTS.md) and eval runs.
 
-Last updated: 2026-04-03
+Last updated: 2026-04-04
 
 ---
 
@@ -87,10 +87,10 @@ Last updated: 2026-04-03
 
 | # | Improvement | Status | Notes |
 |---|---|---|---|
-| 15 | Path-scoped rules (`.claude/rules/`) | Planned | Move domain instructions from CLAUDE.md into glob-scoped rule files |
-| 16 | Dynamic context in skills (`!`cmd``) | Planned | Inject live git state, diffs, etc. into skills before they load |
-| 17 | Hooks for structural enforcement | Planned | TDD enforcement, pre-commit validation, destructive command guards |
-| 18 | Skill frontmatter modernization | Planned | `context: fork`, `paths:`, `allowed-tools:`, `model:` across all skills |
+| 15 | Path-scoped rules (`.claude/rules/`) | Done | 7 rule files in rules/ with glob-scoped activation |
+| 16 | Dynamic context in skills (`` !`cmd` ``) | Done | Live git state, diffs, audit results injected into 5 skills |
+| 17 | Hooks for structural enforcement | Done | 3 hook scripts + config template, install.sh merges into settings |
+| 18 | Skill frontmatter modernization | Done | fork/opus on 5, allowed-tools on 3, paths on 6, user-invocable on 3 |
 | 19 | Agent SDK evaluation | Deferred | Revisit if Tier 3/4 evals show dispatch failures |
 
 ## What's Left
@@ -101,17 +101,17 @@ Last updated: 2026-04-03
 - [ ] Run Tier 4 eval (full pipeline end-to-end)
 
 ### V2 Priority Order
-1. Path-scoped rules (#15) — most impactful, reduces CLAUDE.md bloat
-2. Hooks (#17) — structural TDD/validation enforcement
-3. Skill frontmatter (#18) — isolation and auto-activation
-4. Dynamic context (#16) — live state injection
+1. ~~Path-scoped rules (#15)~~ — Done
+2. ~~Hooks (#17)~~ — Done
+3. ~~Skill frontmatter (#18)~~ — Done
+4. ~~Dynamic context (#16)~~ — Done
 5. Run remaining evals — validates multi-agent pipelines
 6. Agent SDK (#19) — only if evals reveal dispatch failures
 
 ### From improvements/ backlog
-- [ ] Add caching patterns to backend-engineering skill (improvements/skills/)
-- [ ] Add threat-modeler to Tier 2 evals (improvements/agents/)
-- [ ] Wire run-eval.sh to execute evals automatically (improvements/system/)
+- [x] Add caching patterns to backend-engineering skill — Done
+- [x] Add threat-modeler to Tier 2 evals — Done
+- [x] Wire run-eval.sh to execute evals automatically — Done (--run, --run-tier, --run-all)
 
 ### Deferred
 - Cross-agent memory (#11) — revisit when proven needed in practice

@@ -6,6 +6,9 @@ last_verified: 2026-04-03
 allowed-tools: [Read, Grep, Glob, Edit, Bash]
 ---
 
+## Context
+Staged changes: !`git diff --stat --staged 2>/dev/null || echo "nothing staged"`
+
 # Refactoring
 
 Improve code structure without changing behavior. Every refactoring preserves existing tests — if tests break, the refactoring introduced a bug.

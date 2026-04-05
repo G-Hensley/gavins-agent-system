@@ -26,13 +26,16 @@ When you add, remove, or rename an agent, skill, command, or any structural elem
 
 ## Stack Preferences
 
+- **TypeScript only — never JavaScript.** All frontend and Node.js code must be TypeScript. No `.js` files, no `allowJs`, no exceptions.
+- **pnpm only** for TypeScript/Node.js projects. Never use npm or yarn. Use `pnpm install`, `pnpm add`, `pnpm audit`.
+- **uv only** for Python projects. Never use pip, poetry, or pipenv directly. Use `uv init`, `uv add`, `uv run`, `uv sync`.
 - **Python**: dataclasses, argparse, asyncio, typing, Pydantic. Rate limiting at 8 req/s. Shared auth via Cognito SRP.
 - **TypeScript**: Zod validation, Zustand state, strict types. No `any`.
 - **React**: function components, hooks, server components default. Props interfaces on every component.
 - **Next.js**: App Router. Server components for data, client components pushed to leaves.
 - **CSS**: Tailwind with design system values from config. No arbitrary values.
 - **AWS**: Lambda, DynamoDB, S3, Cognito, Secrets Manager, EventBridge. Least-privilege IAM always.
-- **Testing**: pytest (Python), Vitest (TS), Playwright (E2E).
+- **Testing**: pytest via `uv run pytest` (Python), Vitest (TS), Playwright (E2E).
 
 ## Agent Dispatch Guide
 
@@ -62,7 +65,7 @@ Use these agents proactively — don't wait for me to ask:
 - Validate all input at system boundaries
 - Parameterized queries only — never string concatenation
 - Least-privilege IAM — no wildcards on actions or resources
-- Check `npm audit` / `pip audit` when adding dependencies
+- Check `pnpm audit` / `uv pip audit` when adding dependencies
 - Dispatch security specialist agents proactively when touching auth, APIs, or infrastructure
 
 ## Self-Improvement

@@ -6,6 +6,9 @@ last_verified: 2026-04-03
 allowed-tools: [Read, Grep, Glob, Bash]
 ---
 
+## Context
+Files changed: !`git diff --name-only HEAD~1 2>/dev/null || git diff --name-only --staged 2>/dev/null || echo "no changes detected"`
+
 # Code Review
 
 Two phases: requesting a review, then processing the feedback. Both phases can be used independently.

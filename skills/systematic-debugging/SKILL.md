@@ -4,6 +4,9 @@ description: Systematic root-cause debugging process. Use when encountering any 
 last_verified: 2026-04-03
 ---
 
+## Context
+Recent git changes: !`git log --oneline -3 2>/dev/null || echo "no history"`
+
 # Systematic Debugging
 
 Find root cause before attempting fixes. Random fixes waste time and create new bugs.

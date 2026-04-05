@@ -4,6 +4,10 @@ description: Security review, hardening, and best practices across all layers â€
 last_verified: 2026-04-03
 ---
 
+## Context
+npm audit: !`npm audit --audit-level=moderate 2>/dev/null | head -5 || echo "no package.json"`
+pip audit: !`pip audit 2>/dev/null | head -5 || echo "no pip audit available"`
+
 # Security
 
 Comprehensive security guidance across all application layers. Apply the relevant domain based on what's being built or reviewed.

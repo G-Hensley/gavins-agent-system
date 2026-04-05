@@ -2,24 +2,22 @@
 # run-eval.sh — Execute evals for Gavin's Agent System
 #
 # Usage:
-#   ./run-eval.sh <target>            Run a specific tier or review challenge
-#   ./run-eval.sh all                 Run every eval
-#   ./run-eval.sh --list              List all available evals
-#   ./run-eval.sh --results           Show summary of past eval runs
-#   ./run-eval.sh --help              Show this message
+#   ./run-eval.sh --list                    List all available evals
+#   ./run-eval.sh --results                 Show summary of past eval runs
+#   ./run-eval.sh --run <path>              Run a specific eval by path
+#   ./run-eval.sh --run-tier <N>            Run all evals in a tier (1-4)
+#   ./run-eval.sh --run-all                 Run every eval
+#   ./run-eval.sh --help                    Show this message
 #
-# Target examples:
-#   tier-1
-#   tier-2
-#   tier-3
-#   tier-4
-#   review-challenges/sql-injection
-#   review-challenges/xss-vulnerability
+# Path examples:
+#   --run tier-1-single-agent/cli-calculator
+#   --run review-challenges/sql-injection
+#   --run-tier 1
+#   --run-tier 2
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-RESULTS_DIR="${SCRIPT_DIR}/results"
 TIMESTAMP="$(date +%Y%m%dT%H%M%S)"
 
 TIERS=(
@@ -43,8 +41,7 @@ REVIEW_CHALLENGES=(
 # ---------------------------------------------------------------------------
 
 usage() {
-  # Print the header comment block at the top of the file (lines 2-18)
-  sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'
   exit 0
 }
 
@@ -53,16 +50,19 @@ list_evals() {
   echo ""
   echo "Tiers:"
   for tier in "${TIERS[@]}"; do
-    echo "  ${tier}"
+    local tier_path="${SCRIPT_DIR}/${tier}"
+    if [[ -d "${tier_path}" ]]; then
+      for eval_dir in "${tier_path}"/*/; do
+        [[ -d "${eval_dir}" ]] || continue
+        echo "  ${tier}/$(basename "${eval_dir}")"
+      done
+    fi
   done
   echo ""
   echo "Review challenges:"
   for challenge in "${REVIEW_CHALLENGES[@]}"; do
     echo "  ${challenge}"
   done
-  echo ""
-  echo "Meta targets:"
-  echo "  all"
   exit 0
 }
 
@@ -75,27 +75,29 @@ get_git_sha() {
   git -C "${SCRIPT_DIR}" rev-parse --short HEAD 2>/dev/null || echo "unknown"
 }
 
+require_claude() {
+  command -v claude &>/dev/null || die "'claude' CLI not found in PATH. Install it and try again."
+}
+
 # ---------------------------------------------------------------------------
 # Result scaffolding
 # ---------------------------------------------------------------------------
 
-# write_result_scaffold <run_dir> <eval_id>
-# Creates a result.json template for the given run. Token values and findings
-# are left null/empty — to be filled in manually or by a future integration.
-write_result_scaffold() {
-  local run_dir="$1"
+write_result() {
+  local output_dir="$1"
   local eval_id="$2"
+  local status="$3"
   local iso_date
   iso_date="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   local git_sha
   git_sha="$(get_git_sha)"
 
-  cat > "${run_dir}/result.json" <<JSON
+  cat > "${output_dir}/result.json" <<JSON
 {
   "eval": "${eval_id}",
   "date": "${iso_date}",
   "git_sha": "${git_sha}",
-  "status": "pending",
+  "status": "${status}",
   "agents_dispatched": [],
   "metrics": {
     "total_tokens": null,
@@ -113,11 +115,6 @@ JSON
 # ---------------------------------------------------------------------------
 
 show_results() {
-  if [[ ! -d "${RESULTS_DIR}" ]]; then
-    echo "No results directory found at ${RESULTS_DIR}"
-    exit 0
-  fi
-
   local found=0
 
   printf "%-50s  %-24s  %-10s  %-8s  %s\n" "EVAL" "DATE" "STATUS" "GIT_SHA" "NOTES"
@@ -125,7 +122,6 @@ show_results() {
 
   while IFS= read -r result_file; do
     found=1
-    # Extract fields using python3 for portable JSON parsing
     if command -v python3 &>/dev/null; then
       python3 - "${result_file}" <<'PYEOF'
 import json, sys
@@ -142,108 +138,148 @@ except Exception as e:
     print(f"  (could not parse {sys.argv[1]}: {e})")
 PYEOF
     else
-      # Fallback: print the raw path if python3 unavailable
       echo "  ${result_file}"
     fi
-  done < <(find "${RESULTS_DIR}" -name "result.json" | sort)
+  done < <(find "${SCRIPT_DIR}" -name "result.json" -path "*/output/result.json" | sort)
 
   if [[ "${found}" -eq 0 ]]; then
-    echo "No past eval results found in ${RESULTS_DIR}"
+    echo "No past eval results found."
   fi
 
   exit 0
 }
 
-validate_target() {
-  local target="$1"
-  [[ -z "${target}" ]] && die "No target specified. Run with --help for usage."
+# ---------------------------------------------------------------------------
+# Prompt extraction
+# ---------------------------------------------------------------------------
 
-  # Normalize tier shorthand (e.g. "tier-1" -> "tier-1-single-agent")
-  case "${target}" in
-    tier-1) target="tier-1-single-agent" ;;
-    tier-2) target="tier-2-multi-agent" ;;
-    tier-3) target="tier-3-architecture-first" ;;
-    tier-4) target="tier-4-full-workflow" ;;
-  esac
+# extract_prompt <eval-prompt.md path>
+# For review challenges: extracts text between the first pair of --- delimiters.
+# For tier evals: returns the full file content.
+extract_prompt() {
+  local prompt_file="$1"
+  local is_review_challenge="${2:-false}"
 
-  # Check existence
-  if [[ "${target}" != "all" ]]; then
-    local path="${SCRIPT_DIR}/${target}"
-    [[ -d "${path}" ]] || die "Target not found: ${path}"
+  if [[ "${is_review_challenge}" == "true" ]]; then
+    # Extract content between first --- and second --- delimiter
+    python3 - "${prompt_file}" <<'PYEOF'
+import sys, re
+content = open(sys.argv[1]).read()
+# Find content between first pair of --- delimiters
+match = re.search(r'^---\s*\n(.*?)\n---', content, re.DOTALL | re.MULTILINE)
+if match:
+    print(match.group(1).strip())
+else:
+    # Fallback: print the whole file
+    print(content.strip())
+PYEOF
+  else
+    cat "${prompt_file}"
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Execution
+# ---------------------------------------------------------------------------
+
+# run_single_eval <eval_path_relative> <is_review_challenge>
+# eval_path_relative: e.g. "tier-1-single-agent/cli-calculator" or "review-challenges/sql-injection"
+run_single_eval() {
+  local eval_rel="$1"
+  local is_review_challenge="${2:-false}"
+  local eval_dir="${SCRIPT_DIR}/${eval_rel}"
+  local prompt_file="${eval_dir}/eval-prompt.md"
+  local output_dir="${eval_dir}/output"
+
+  [[ -d "${eval_dir}" ]]   || die "Eval directory not found: ${eval_dir}"
+  [[ -f "${prompt_file}" ]] || die "eval-prompt.md not found in ${eval_dir}"
+
+  mkdir -p "${output_dir}"
+
+  echo "[run-eval] Running: ${eval_rel}"
+  echo "[run-eval] Output:  ${output_dir}/response.json"
+
+  local prompt
+  prompt="$(extract_prompt "${prompt_file}" "${is_review_challenge}")"
+
+  local status="passed"
+  local start_ts
+  start_ts="$(date +%s)"
+
+  if ! claude --print --output-format json -p "${prompt}" > "${output_dir}/response.json" 2>&1; then
+    status="failed"
+    echo "[run-eval] FAILED: ${eval_rel}" >&2
   fi
 
-  echo "${target}"
+  local end_ts
+  end_ts="$(date +%s)"
+  local duration=$(( end_ts - start_ts ))
+
+  write_result "${output_dir}" "${eval_rel}" "${status}"
+
+  # Patch duration into result.json
+  python3 - "${output_dir}/result.json" "${duration}" <<'PYEOF'
+import json, sys
+path, secs = sys.argv[1], int(sys.argv[2])
+with open(path) as f:
+    d = json.load(f)
+d["metrics"]["duration_seconds"] = secs
+with open(path, "w") as f:
+    json.dump(d, f, indent=2)
+PYEOF
+
+  echo "[run-eval] Done: ${eval_rel} (${duration}s) — ${status}"
 }
 
-make_results_dir() {
-  local target_slug="${1//\//-}"
-  local run_dir="${RESULTS_DIR}/${TIMESTAMP}-${target_slug}"
-  mkdir -p "${run_dir}"
-  echo "${run_dir}"
-}
-
-# ---------------------------------------------------------------------------
-# Execution stubs
-# ---------------------------------------------------------------------------
-
-run_tier() {
+# run_tier_evals <tier_dir_name>
+run_tier_evals() {
   local tier="$1"
-  local run_dir="$2"
   local tier_path="${SCRIPT_DIR}/${tier}"
 
-  echo "[run-eval] Target: ${tier}"
-  echo "[run-eval] Results: ${run_dir}"
-  echo "[run-eval] Eval directory: ${tier_path}"
-  echo ""
+  [[ -d "${tier_path}" ]] || die "Tier directory not found: ${tier_path}"
 
-  # TODO: iterate over prompts in tier directory and execute each against the agent system
-  echo "[run-eval] PLACEHOLDER — would run all prompts under ${tier_path}/"
-  echo "[run-eval] Results would be written to ${run_dir}/"
+  local count=0
+  for eval_dir in "${tier_path}"/*/; do
+    [[ -d "${eval_dir}" ]] || continue
+    local eval_name
+    eval_name="$(basename "${eval_dir}")"
+    run_single_eval "${tier}/${eval_name}" "false"
+    (( count++ )) || true
+    echo ""
+  done
 
-  write_result_scaffold "${run_dir}" "${tier}"
-  echo "[run-eval] Wrote result scaffold to ${run_dir}/result.json"
+  [[ "${count}" -gt 0 ]] || echo "[run-eval] No eval subdirectories found in ${tier_path}"
 }
 
-run_review_challenge() {
-  local challenge="$1"
-  local run_dir="$2"
-  local challenge_path="${SCRIPT_DIR}/${challenge}"
-
-  echo "[run-eval] Target: ${challenge}"
-  echo "[run-eval] Results: ${run_dir}"
-  echo "[run-eval] Challenge directory: ${challenge_path}"
-  echo ""
-
-  # TODO: load prompt.md, send artifact + prompt to the target reviewer agent, score output against rubric.md
-  echo "[run-eval] PLACEHOLDER — would dispatch reviewer agent for ${challenge_path}/"
-  echo "[run-eval] Results would be written to ${run_dir}/"
-
-  write_result_scaffold "${run_dir}" "${challenge}"
-  echo "[run-eval] Wrote result scaffold to ${run_dir}/result.json"
+# resolve_tier_name <N>
+# Converts short tier number (1-4) to full directory name
+resolve_tier_name() {
+  local n="$1"
+  case "${n}" in
+    1) echo "tier-1-single-agent" ;;
+    2) echo "tier-2-multi-agent" ;;
+    3) echo "tier-3-architecture-first" ;;
+    4) echo "tier-4-full-workflow" ;;
+    *) die "Unknown tier: ${n}. Valid values: 1 2 3 4" ;;
+  esac
 }
 
-run_all() {
-  local run_dir
-  run_dir="$(make_results_dir all)"
-
-  echo "[run-eval] Running all evals"
-  echo "[run-eval] Results root: ${run_dir}"
+run_all_evals() {
+  echo "[run-eval] Running all evals — $(date)"
   echo ""
 
   for tier in "${TIERS[@]}"; do
-    echo "--- ${tier} ---"
-    run_tier "${tier}" "${run_dir}/${tier}"
-    echo ""
+    echo "=== ${tier} ==="
+    run_tier_evals "${tier}"
   done
 
   for challenge in "${REVIEW_CHALLENGES[@]}"; do
-    local slug="${challenge//\//-}"
-    echo "--- ${challenge} ---"
-    run_review_challenge "${challenge}" "${run_dir}/${slug}"
+    echo "=== ${challenge} ==="
+    run_single_eval "${challenge}" "true"
     echo ""
   done
 
-  echo "[run-eval] All evals complete. Results in ${run_dir}/"
+  echo "[run-eval] All evals complete."
 }
 
 # ---------------------------------------------------------------------------
@@ -254,23 +290,41 @@ main() {
   local arg="${1:-}"
 
   case "${arg}" in
-    --help|-h)    usage ;;
-    --list|-l)    list_evals ;;
-    --results|-r) show_results ;;
-    all)       run_all ;;
-    "")        die "No target specified. Run with --help for usage." ;;
+    --help|-h)
+      usage
+      ;;
+    --list|-l)
+      list_evals
+      ;;
+    --results|-r)
+      show_results
+      ;;
+    --run)
+      [[ -n "${2:-}" ]] || die "--run requires a path argument (e.g. tier-1-single-agent/cli-calculator)"
+      require_claude
+      local eval_path="$2"
+      local is_review="false"
+      [[ "${eval_path}" == review-challenges/* ]] && is_review="true"
+      run_single_eval "${eval_path}" "${is_review}"
+      ;;
+    --run-tier)
+      [[ -n "${2:-}" ]] || die "--run-tier requires a tier number (1-4)"
+      require_claude
+      local tier_name
+      tier_name="$(resolve_tier_name "$2")"
+      echo "[run-eval] Running all evals in ${tier_name}"
+      echo ""
+      run_tier_evals "${tier_name}"
+      ;;
+    --run-all)
+      require_claude
+      run_all_evals
+      ;;
+    "")
+      die "No arguments provided. Run with --help for usage."
+      ;;
     *)
-      local target
-      target="$(validate_target "${arg}")"
-      local run_dir
-      run_dir="$(make_results_dir "${target}")"
-
-      # Route to the right runner
-      if [[ "${target}" == review-challenges/* ]]; then
-        run_review_challenge "${target}" "${run_dir}"
-      else
-        run_tier "${target}" "${run_dir}"
-      fi
+      die "Unknown argument: ${arg}. Run with --help for usage."
       ;;
   esac
 }

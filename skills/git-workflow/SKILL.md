@@ -4,6 +4,11 @@ description: Complete git workflow — worktree setup, commits, pushing, PRs, br
 last_verified: 2026-04-03
 ---
 
+## Context
+Current branch: !`git branch --show-current 2>/dev/null || echo "not a git repo"`
+Recent commits: !`git log --oneline -5 2>/dev/null || echo "no commits"`
+Working tree status: !`git status --short 2>/dev/null || echo "clean"`
+
 # Git Workflow
 
 All git operations from workspace setup through branch completion.
