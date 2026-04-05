@@ -2,6 +2,7 @@
 name: backend-engineering
 description: Backend development patterns for Python, Node.js, and Java — APIs, services, error handling, logging, and server-side architecture. Use when building API endpoints, services, server-side logic, or working with backend frameworks. Also use when the user says "build an API", "backend", "endpoint", "service layer", "server-side", or when writing Python/Node/Java server code.
 last_verified: 2026-04-03
+paths: ["**/*.py", "**/*.ts", "**/*.java"]
 ---
 
 # Backend Engineering
@@ -50,4 +51,5 @@ Dispatch the `backend-engineer` subagent for implementation or `backend-reviewer
 - `references/node-patterns.md` — Node.js backend patterns (Express, Next.js API routes, TypeScript, async/await). Read when writing Node services.
 - `references/java-patterns.md` — Java backend patterns (Spring Boot, dependency injection, services, repositories). Read when writing Java services.
 - `references/api-design.md` — REST API design patterns (naming, contracts, pagination, errors, versioning). Read when designing any API regardless of language.
+- `references/caching-patterns.md` — Cache-aside, Redis, TTL strategy, invalidation, HTTP caching, stampede prevention. Read when adding caching to any backend service.
 **Subagent:** `backend-engineer` — builds APIs, services, server-side logic. Located at `~/.claude/agents/backend-engineer.md`.

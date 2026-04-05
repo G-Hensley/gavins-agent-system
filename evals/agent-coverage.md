@@ -1,7 +1,7 @@
 ---
 # Agent Coverage Matrix
 
-Maps each of the 23 specialist agents to the tier(s) and review challenges where it is tested.
+Maps each of the 24 specialist agents to the tier(s) and review challenges where it is tested.
 A dash means the agent is not the primary subject at that tier.
 
 | Agent | Tier 1 | Tier 2 | Tier 3 | Tier 4 | Review Challenge |
@@ -19,7 +19,7 @@ A dash means the agent is not the primary subject at that tier.
 | architect | — | — | Game architecture | Full-stack app | — |
 | product-manager | — | — | Game PRD | Full-stack app | — |
 | uiux-designer | — | Tic-tac-toe design | — | Full-stack app | — |
-| threat-modeler | — | — | Game threat model | Full-stack app | — |
+| threat-modeler | — | Secrets scanning | Game threat model | Full-stack app | — |
 | appsec-reviewer | — | — | — | — | dependency-vuln |
 | architecture-reviewer | — | — | Review game design | — | — |
 | backend-security-reviewer | — | — | — | — | sql-injection |

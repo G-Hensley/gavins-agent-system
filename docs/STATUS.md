@@ -83,6 +83,16 @@ Last updated: 2026-04-03
 
 ---
 
+## V2 Improvements (from Claude Code/Cowork research report)
+
+| # | Improvement | Status | Notes |
+|---|---|---|---|
+| 15 | Path-scoped rules (`.claude/rules/`) | Planned | Move domain instructions from CLAUDE.md into glob-scoped rule files |
+| 16 | Dynamic context in skills (`!`cmd``) | Planned | Inject live git state, diffs, etc. into skills before they load |
+| 17 | Hooks for structural enforcement | Planned | TDD enforcement, pre-commit validation, destructive command guards |
+| 18 | Skill frontmatter modernization | Planned | `context: fork`, `paths:`, `allowed-tools:`, `model:` across all skills |
+| 19 | Agent SDK evaluation | Deferred | Revisit if Tier 3/4 evals show dispatch failures |
+
 ## What's Left
 
 ### Eval Runs Remaining
@@ -90,10 +100,19 @@ Last updated: 2026-04-03
 - [ ] Run Tier 3 evals (3 architecture-first tests)
 - [ ] Run Tier 4 eval (full pipeline end-to-end)
 
-### Future Improvements (from improvements/ backlog)
+### V2 Priority Order
+1. Path-scoped rules (#15) — most impactful, reduces CLAUDE.md bloat
+2. Hooks (#17) — structural TDD/validation enforcement
+3. Skill frontmatter (#18) — isolation and auto-activation
+4. Dynamic context (#16) — live state injection
+5. Run remaining evals — validates multi-agent pipelines
+6. Agent SDK (#19) — only if evals reveal dispatch failures
+
+### From improvements/ backlog
 - [ ] Add caching patterns to backend-engineering skill (improvements/skills/)
 - [ ] Add threat-modeler to Tier 2 evals (improvements/agents/)
 - [ ] Wire run-eval.sh to execute evals automatically (improvements/system/)
 
 ### Deferred
 - Cross-agent memory (#11) — revisit when proven needed in practice
+- CLAUDE.md splitting — evaluate after `.claude/rules/` is in place

@@ -1,7 +1,7 @@
 # Eval Criteria: Secrets Scanning Pipeline (Tier 2 — Multi-Agent Handoff)
 
-Target agents: `devsecops-engineer` → `devops-engineer`
-Max score: 12 (6 dimensions × 0–2)
+Target agents: `devsecops-engineer` → `devops-engineer` → `threat-modeler`
+Max score: 14 (7 dimensions × 0–2)
 
 ---
 
@@ -93,3 +93,18 @@ Max score: 12 (6 dimensions × 0–2)
 - 2 — Both agents follow their domain rules; permissions are scoped; no hardcoded secrets anywhere
 - 1 — Minor violation (e.g., `write-all` permissions on the workflow, or exclusion pattern is too broad)
 - 0 — Credentials hardcoded in any artifact, or `devsecops-engineer` skips history scanning entirely
+
+---
+
+## 7. Threat Assessment (0–2)
+
+**What to check:**
+- After `devsecops-engineer` and `devops-engineer` produce the pipeline design and workflow, `threat-modeler` is dispatched to assess the secrets scanning pipeline's threat surface
+- The threat assessment identifies at least two realistic risks specific to the secrets scanning pipeline (e.g., secret patterns missed by the scanner, false positive categories that could cause developer bypass, or ways the scanning could be circumvented)
+- For each identified risk, the assessment proposes or acknowledges a mitigation (e.g., scanning git history to catch rotated secrets, tuning the tool's regex to reduce false positives, or code review fallback if CI is bypassed)
+- The assessment is lightweight — a short summary of the data flows, trust boundaries, and gaps — not a full VAST model
+
+**Scoring:**
+- 2 — Two or more distinct risks identified with concrete mitigations proposed; assessment is scoped to secrets pipeline and data flows
+- 1 — One risk identified with mitigation, or two risks identified but mitigations are vague ("improve security" without specifics)
+- 0 — No threat assessment produced, or assessment is generic/not tailored to the secrets scanning pipeline

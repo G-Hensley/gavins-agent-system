@@ -1,6 +1,6 @@
 # Agent System Eval Suite
 
-Graded prompts and seeded review challenges that exercise the 23 specialist agents and 29 skills in Gavin's Agent System.
+Graded prompts and seeded review challenges that exercise the 24 specialist agents and 27 skills in Gavin's Agent System.
 
 ## Why It Exists
 
@@ -15,7 +15,7 @@ Each tier adds a layer of system complexity:
 | **Tier 1 — Single Agent** | One agent receives a focused task and completes it without help | Correct agent dispatched, output meets spec, follows agent-specific rules |
 | **Tier 2 — Multi-Agent** | A task requires one agent to hand off to another (e.g., design then implement) | Correct handoff sequence, context preserved across handoff, each agent stays in its lane |
 | **Tier 3 — Architecture First** | Task is complex enough to warrant `architect` + `product-manager` before any code is written | Full pipeline: PM -> architect -> reviewer -> implementers, no premature implementation |
-| **Tier 4 — Full Workflow** | End-to-end using `subagent-driven-development`: plan, task breakdown, parallel implementation, QA | All 23 agents exercised, task graph correct, parallel execution where applicable |
+| **Tier 4 — Full Workflow** | End-to-end using `subagent-driven-development`: plan, task breakdown, parallel implementation, QA | All 24 agents exercised, task graph correct, parallel execution where applicable |
 
 ### Tier 1 — Single Agent (`tier-1-single-agent/`)
 

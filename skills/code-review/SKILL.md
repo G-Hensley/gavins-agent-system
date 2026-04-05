@@ -3,6 +3,7 @@ name: code-review
 description: Complete code review workflow — requesting reviews, processing feedback, and acting on results. Use when completing tasks, implementing features, before merging, when receiving feedback, or when stuck and wanting a fresh perspective. Also use when the user says "review this", "code review", "check my work", or when processing review comments.
 follows: test-driven-development
 last_verified: 2026-04-03
+allowed-tools: [Read, Grep, Glob, Bash]
 ---
 
 # Code Review

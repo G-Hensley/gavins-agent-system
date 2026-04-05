@@ -427,19 +427,168 @@ The threat-modeler is sequential with the architect (needs the design doc) but c
 
 ---
 
+## 15. Adopt `.claude/rules/` with Path-Scoped Globs
+
+Claude Code supports a `.claude/rules/` directory where each `.md` file can have YAML frontmatter with `paths:` glob patterns. Rules only load when Claude works with matching files — this is more context-efficient than loading everything from CLAUDE.md every session.
+
+### What to Move
+
+Move domain-specific instructions out of CLAUDE.md and into scoped rules:
+
+```
+.claude/rules/
+├── security.md          # paths: ["**/auth/**", "**/iam/**", "**/*security*"]
+├── frontend.md          # paths: ["src/components/**", "**/*.tsx", "**/*.jsx"]
+├── backend-python.md    # paths: ["**/*.py", "**/services/**", "**/handlers/**"]
+├── backend-node.md      # paths: ["**/api/**/*.ts", "**/routes/**"]
+├── aws-infra.md         # paths: ["**/*.yaml", "**/cdk/**", "**/cloudformation/**"]
+├── testing.md           # paths: ["**/*test*", "**/*spec*", "**/fixtures/**"]
+└── database.md          # paths: ["**/migrations/**", "**/models/**", "**/schema*"]
+```
+
+### Why This Matters
+
+- CLAUDE.md stays under 200 lines with only universal rules
+- Domain rules only consume context when relevant (working on Python files doesn't load React rules)
+- Rules are git-committable and shareable per-project
+- Works alongside the existing skill system — rules are static instructions, skills are dynamic workflows
+
+### Actions
+
+- [ ] Identify which CLAUDE.md sections are domain-specific vs. universal
+- [ ] Create `.claude/rules/` directory with path-scoped files
+- [ ] Keep CLAUDE.md for: response style, commit format, YAGNI/DRY/TDD principles, agent dispatch table
+- [ ] Add rule validation to `validate.sh` (check paths are valid globs, no duplicates)
+
+---
+
+## 16. Dynamic Context in Skills via `!`command`` Syntax
+
+Skills support `!`command`` syntax in their body that executes shell commands before the content reaches Claude. This enables dynamic context injection — the skill can pull in live state rather than relying on static instructions.
+
+### Opportunities
+
+- **skill-router**: Inject `!`git branch --show-current`` and `!`git diff --stat`` so routing decisions account for current work state
+- **git-workflow**: Inject `!`git status --short`` and `!`git log --oneline -5`` so the skill sees the current repo state
+- **code-review**: Inject `!`git diff HEAD~1`` to automatically load the diff being reviewed
+- **systematic-debugging**: Inject `!`git log --oneline -3`` to see recent changes that might have introduced the bug
+
+### Actions
+
+- [ ] Audit all skills for opportunities to use dynamic context
+- [ ] Start with git-workflow and code-review as highest-impact candidates
+- [ ] Test that `!`command`` works in subagent skill loading (not just main conversation)
+
+---
+
+## 17. Hooks for Structural Enforcement
+
+The system relies entirely on Claude following instructions (CLAUDE.md, skills). Hooks make enforcement structural — they execute automatically at lifecycle events and can block, modify, or augment tool calls.
+
+### High-Value Hooks to Build
+
+**TDD Enforcement** (`PreToolUse` on `Write`):
+- When a new source file is created, check whether a corresponding test file exists
+- If not, inject context: "No test file found for this source file. TDD requires writing tests first."
+
+**Pre-Commit Validation** (`PreToolUse` on `Bash(git commit *)`):
+- Run `scripts/validate.sh` before allowing commits
+- Block if validation fails
+
+**Session Start Context** (`SessionStart`):
+- Load CONTEXT.md automatically
+- Run `git status` and inject current branch/state
+
+**Post-Edit Lint** (`PostToolUse` on `Edit`/`Write`):
+- Run linter on modified files
+- Feed results back to Claude
+
+**Destructive Command Guard** (`PreToolUse` on `Bash`):
+- Block `rm -rf`, `git push --force`, `DROP TABLE` etc.
+- Require explicit confirmation
+
+### Actions
+
+- [ ] Create `.claude/hooks/` directory
+- [ ] Start with TDD enforcement and pre-commit validation (highest impact)
+- [ ] Add hook definitions to `settings.json` or `settings.local.json`
+- [ ] Add hooks to the eval criteria — do hooks fire correctly during eval runs?
+- [ ] Document hooks in CONTEXT.md
+
+---
+
+## 18. Skill Frontmatter Modernization
+
+Several skill frontmatter fields are available but not used in the current system. Adopting them would improve isolation, auto-activation, and tool scoping.
+
+### Fields to Adopt
+
+- **`context: fork`** — Run skills in subagent isolation. Critical for review skills (code-quality-reviewer, spec-reviewer, security reviewers) where isolated context prevents contamination from the main conversation.
+- **`paths:`** — Auto-activate skills when Claude works with matching files. `backend-engineering` could activate on `**/*.py` and `**/services/**` without manual routing.
+- **`allowed-tools:`** — Restrict which tools a skill can use. Review skills should only have `Read, Grep, Glob` — they shouldn't be able to `Write` or `Edit`.
+- **`agent:`** — Specify which subagent type to use (e.g., `Explore` for code-explorer).
+- **`model:`** — Per-skill model override. Some skills may work fine on Sonnet, saving Opus tokens.
+
+### Actions
+
+- [ ] Audit all 27 skills for applicable frontmatter additions
+- [ ] Prioritize: `context: fork` on review skills, `paths:` on domain skills, `allowed-tools:` on read-only skills
+- [ ] Test that frontmatter changes don't break existing agent dispatch
+- [ ] Add frontmatter validation to `validate.sh`
+
+---
+
+## 19. Agent SDK — When to Adopt
+
+The Claude Agent SDK enables programmatic orchestration outside of Claude Code's instruction-following model. **Not needed yet**, but worth knowing when it becomes the right tool.
+
+### When to Consider
+
+- When instruction-following isn't reliable enough for critical routing (e.g., Claude skips threat-modeler despite the dispatch table saying to use it)
+- When you want deterministic pipelines: "if task touches IAM, always run threat-modeler" as code, not as a prompt instruction
+- When building a standalone tool that orchestrates agents externally (not within Claude Code)
+- When you need custom error handling, retry logic, or conditional branching that's too complex for hooks
+
+### What It Would Replace
+
+The Agent SDK would replace the *dispatch layer* — the skill-router and CLAUDE.md dispatch table — with programmatic routing. The skills, agent definitions, and memory system would stay the same.
+
+### Current Recommendation
+
+Stay file-based. The skill-router + dispatch table + hooks stack covers the current use case well. The eval results (28/28 on reviews, 4/4 on Tier 1) show that instruction-following is working. Revisit if:
+- Tier 3/4 evals show dispatch failures
+- You need to run agents outside of Claude Code (CI pipeline, web service, etc.)
+- You want guaranteed routing that doesn't depend on Claude reading instructions correctly
+
+---
+
 ## Priority Order
 
 Suggested sequence for working through these:
 
-1. **Validation script** (#2) — quick win, prevents silent breakage
-2. **Agent memory directories** (#3) — 5-minute task, removes friction
-3. **CONTEXT.md** (#5) — foundational context that other improvements reference
-4. **Agent parallelism map** (#12) — document before building evals so dispatch is correct
-5. **Threat-modeler agent + architect security loading** (#14) — closes the design-time security gap before you start building eval projects that should exercise it
-6. **Eval suite structure** (#1) — biggest impact, start with Tier 1
-7. **Token tracking** (#13) — wire up before running evals so you capture data from day one
-8. **Review challenges** (#1) — seed the security reviewer tests
-9. **Handoff protocol** (#8) — document as you build evals
-10. **Failure modes** (#9) — document as you encounter them in evals
-11. **Improvements backlog** (#4) — flows naturally from running evals
-12. **Everything else** — tackle as the system matures
+### Completed (v1)
+1. ~~Validation script (#2)~~ — done, 236 checks across 9 categories
+2. ~~Agent memory directories (#3)~~ — done, all 24 agents
+3. ~~CONTEXT.md (#5)~~ — done, includes parallelism rules
+4. ~~Agent parallelism map (#12)~~ — done, in CONTEXT.md
+5. ~~Threat-modeler agent (#14)~~ — done, agent + dispatch + memory
+6. ~~Eval suite (#1)~~ — done, all tiers + review challenges
+7. ~~Token tracking (#13)~~ — done, result.json scaffold
+8. ~~Handoff protocol (#8)~~ — done, docs/HANDOFF-PROTOCOLS.md
+9. ~~Failure modes (#9)~~ — done, docs/FAILURE-MODES.md
+10. ~~Skill chains (#7)~~ — done, docs/SKILL-CHAINS.md + frontmatter
+11. ~~Staleness detection (#10)~~ — done, `last_verified` on all skills
+12. ~~Improvements backlog (#4)~~ — done, seeded with 3 suggestions
+13. ~~Plans hygiene (#6)~~ — done
+
+### Next Up (v2 — from research report findings)
+14. **Path-scoped rules** (#15) — move domain instructions out of CLAUDE.md into `.claude/rules/` with globs
+15. **Hooks for enforcement** (#17) — TDD enforcement, pre-commit validation, destructive command guards
+16. **Skill frontmatter modernization** (#18) — `context: fork`, `paths:`, `allowed-tools:` across all skills
+17. **Dynamic context in skills** (#16) — `!`command`` syntax for live state injection
+18. **Run remaining evals** — Tier 2, 3, 4 to validate multi-agent and full-pipeline workflows
+19. **Agent SDK evaluation** (#19) — revisit if Tier 3/4 evals show dispatch failures
+
+### Deferred
+- Cross-agent memory (#11) — revisit when proven needed in practice
+- CLAUDE.md splitting (#5 proposed split) — evaluate after rules/ directory is in place

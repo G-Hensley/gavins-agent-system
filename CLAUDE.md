@@ -13,6 +13,10 @@ Full-stack engineer at APIsec (API security platform). Python, TypeScript, Java.
 - **YAGNI.** Build for what's needed now. No speculative abstractions, configurability, or "future-proofing."
 - **Verify before claiming.** Run the command that proves it works. "Should work" is not evidence.
 
+## Documentation Sync
+
+When you add, remove, or rename an agent, skill, command, or any structural element of this system, check that all docs referencing counts or lists are still accurate. Key files to verify: `README.md`, `CLAUDE.md`, `CONTEXT.md`, `docs/STATUS.md`, `evals/agent-coverage.md`. Don't hardcode counts when you can avoid it — but when docs do state a number (e.g., "24 agents"), update it wherever it appears.
+
 ## Code Standards
 
 - **File size:** SKILL.md and agent files under 200 lines. Reference files under 200 lines. Production code files — if it's getting long, it's doing too much.

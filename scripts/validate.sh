@@ -12,10 +12,12 @@ set -uo pipefail
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 AGENTS_DIR="$REPO_DIR/agents"
 SKILLS_DIR="$REPO_DIR/skills"
+RULES_DIR="$REPO_DIR/rules"
 AGENT_MEMORY_DIR="$REPO_DIR/agent-memory"
 PLUGINS_JSON="$REPO_DIR/config/plugins/plugins.json"
 CLAUDE_MD="$REPO_DIR/CLAUDE.md"
 MAX_LINES=200
+MAX_RULE_LINES=50
 FIX_MODE=false
 
 # ---------------------------------------------------------------------------
@@ -38,10 +40,11 @@ for arg in "$@"; do
       echo "  3  SKILL.md files under $MAX_LINES lines"
       echo "  4  Agent .md files under $MAX_LINES lines"
       echo "  5  Reference files under $MAX_LINES lines"
-      echo "  6  plugins/plugins.json is valid JSON"
-      echo "  7  Agent skill references resolve to existing skill directories"
-      echo "  8  Every agent has a corresponding agent-memory/ directory"
-      echo "  9  SKILL.md last_verified staleness (warns if >90 days — does not fail)"
+      echo "  6  Rule files under $MAX_RULE_LINES lines"
+      echo "  7  plugins/plugins.json is valid JSON"
+      echo "  8  Agent skill references resolve to existing skill directories"
+      echo "  9  Every agent has a corresponding agent-memory/ directory"
+      echo " 10  SKILL.md last_verified staleness (warns if >90 days — does not fail)"
       exit 0
       ;;
     *)
@@ -175,7 +178,31 @@ if [ "$ref_count" -eq 0 ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Check 6: plugins/plugins.json is valid JSON
+# Check 6: All rules/*.md files exist and are under MAX_RULE_LINES lines
+# ---------------------------------------------------------------------------
+section "Rule files under $MAX_RULE_LINES lines"
+
+rule_count=0
+if [ -d "$RULES_DIR" ]; then
+  while IFS= read -r rule_file; do
+    rule_count=$((rule_count + 1))
+    line_count=$(wc -l < "$rule_file")
+    line_count="${line_count// /}"
+    rule_rel="${rule_file#$REPO_DIR/}"
+    if [ "$line_count" -le "$MAX_RULE_LINES" ]; then
+      pass "$rule_rel ($line_count lines)"
+    else
+      fail "$rule_rel ($line_count lines -- exceeds $MAX_RULE_LINES)"
+    fi
+  done < <(find "$RULES_DIR" -name "*.md")
+fi
+
+if [ "$rule_count" -eq 0 ]; then
+  warn "No rule files found in rules/"
+fi
+
+# ---------------------------------------------------------------------------
+# Check 7: plugins/plugins.json is valid JSON (renumbered from 6)
 # ---------------------------------------------------------------------------
 section "plugins/plugins.json is valid JSON"
 
@@ -191,7 +218,7 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Check 7: No broken skill cross-references in agent files
+# Check 8: No broken skill cross-references in agent files
 # Parses the frontmatter `skills:` list from each agent .md file
 # ---------------------------------------------------------------------------
 section "Agent skill references resolve to existing skill directories"
@@ -247,7 +274,7 @@ while IFS= read -r agent_file; do
 done < <(find "$AGENTS_DIR" -name "*.md")
 
 # ---------------------------------------------------------------------------
-# Check 8: Every agent in agents/ has an agent-memory/ directory
+# Check 9: Every agent in agents/ has an agent-memory/ directory
 # ---------------------------------------------------------------------------
 section "Every agent has a corresponding agent-memory/ directory"
 
@@ -268,7 +295,7 @@ while IFS= read -r agent_file; do
 done < <(find "$AGENTS_DIR" -name "*.md")
 
 # ---------------------------------------------------------------------------
-# Check 9: Skill staleness — warn if last_verified is older than 90 days
+# Check 10: Skill staleness — warn if last_verified is older than 90 days
 # Uses python3 for date math (macOS date command has limited arithmetic)
 # ---------------------------------------------------------------------------
 section "SKILL.md staleness check (last_verified > 90 days = warning)"

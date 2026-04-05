@@ -18,7 +18,7 @@ Install once with `./scripts/install.sh`, and symlinks propagate changes immedia
 Each skill is a domain of expertise: `architecture/SKILL.md` defines *how* to design systems, `references/` provide patterns and checklists. Skills are reusable across agents.
 
 ### Agents Are Specialist Sessions
-Each agent is a Claude Opus session loaded with specific skills and persistent memory. `architect.md` says "you are a senior architect" and loads the `architecture` and `security` skills. Agent memory (`agent-memory/architect/learnings.md`) persists learnings across sessions.
+Each agent is a Claude session loaded with specific skills and persistent memory. `architect.md` says "you are a senior architect" and loads the `architecture` and `security` skills. Agent memory (`agent-memory/architect/learnings.md`) persists learnings across sessions.
 
 ### Dispatch Routes Work
 The main conversation uses the `skill-router` skill to find the right skill. Dispatch an agent when domain work is needed — don't do everything in the main conversation.

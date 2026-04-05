@@ -10,8 +10,11 @@ Configuration:
 - The scanner config should allow baseline exceptions for known test fixtures that use fake credentials (e.g., `tests/fixtures/`)
 - No secrets from production systems should be required to run the scan
 
+Once the pipeline design is complete, assess its threat surface. What secret patterns might the scanner miss? What false positives could cause developers to ignore the tool? Where could a developer or process bypass the scanning entirely?
+
 Deliverables:
 - `.github/workflows/secrets-scan.yml` — the GitHub Actions workflow
 - Scanner config file (`.gitleaks.toml`, `.trufflehog.yml`, or equivalent)
 - `scripts/scan-secrets.sh` — local scan script
 - Brief explanation of tool choice and any known limitations
+- Lightweight threat assessment of the scanning pipeline (attack surface, false positive risk, gaps)

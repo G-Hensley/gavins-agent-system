@@ -6,6 +6,7 @@ set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 CLAUDE_DIR="$HOME/.claude"
+SETTINGS_FILE="$CLAUDE_DIR/settings.json"
 
 DRY_RUN=false
 VERIFY=false
@@ -57,7 +58,7 @@ done
 # ---------------------------------------------------------------------------
 # Portable directories to sync
 # ---------------------------------------------------------------------------
-DIRS=(skills agents commands improvements agent-memory plans)
+DIRS=(skills agents commands improvements agent-memory plans rules)
 
 # ---------------------------------------------------------------------------
 # --verify mode
@@ -256,6 +257,79 @@ for p in plugins:
     echo ""
     echo "Skipped plugin install (claude CLI not found or plugins.json missing)"
     echo "  Install manually: claude plugin install <name>"
+  fi
+fi
+
+# ---------------------------------------------------------------------------
+# Hooks — merge config/hooks.json into ~/.claude/settings.json
+# ---------------------------------------------------------------------------
+HOOKS_TEMPLATE="$REPO_DIR/config/hooks.json"
+
+if [ -f "$HOOKS_TEMPLATE" ]; then
+  if $DRY_RUN; then
+    echo ""
+    if python3 -c "
+import json, sys
+try:
+    with open('$SETTINGS_FILE') as f:
+        s = json.load(f)
+    sys.exit(0 if 'hooks' in s else 1)
+except Exception:
+    sys.exit(1)
+" 2>/dev/null; then
+      echo "[DRY RUN] Skip: hooks already configured in settings.json"
+    else
+      echo "[DRY RUN] Would merge hooks from config/hooks.json into $SETTINGS_FILE"
+      echo "[DRY RUN] REPO_DIR placeholder would be replaced with: $REPO_DIR"
+      python3 -c "
+import json
+with open('$HOOKS_TEMPLATE') as f:
+    raw = f.read()
+rendered = raw.replace('REPO_DIR', '$REPO_DIR')
+hooks = json.loads(rendered)
+for event, matchers in hooks['hooks'].items():
+    for entry in matchers:
+        for h in entry.get('hooks', []):
+            print(f'[DRY RUN]   [{event}] matcher={entry[\"matcher\"]} cmd={h[\"command\"]}')
+" 2>/dev/null || echo "[DRY RUN]   (could not parse hooks template)"
+    fi
+  else
+    export REPO_DIR_PY="$REPO_DIR"
+    export SETTINGS_FILE_PY="$SETTINGS_FILE"
+    python3 - <<'PYEOF'
+import json, sys, os
+
+repo_dir      = os.environ['REPO_DIR_PY']
+settings_path = os.environ['SETTINGS_FILE_PY']
+hooks_path    = os.path.join(repo_dir, 'config', 'hooks.json')
+
+with open(hooks_path) as f:
+    raw = f.read()
+
+rendered = raw.replace('REPO_DIR', repo_dir)
+hooks_config = json.loads(rendered)
+
+try:
+    with open(settings_path) as f:
+        settings = json.load(f)
+except (FileNotFoundError, json.JSONDecodeError):
+    settings = {}
+
+if 'hooks' in settings:
+    print('  Skipped: hooks already configured in settings.json')
+    sys.exit(0)
+
+settings['hooks'] = hooks_config['hooks']
+
+with open(settings_path, 'w') as f:
+    json.dump(settings, f, indent=2)
+    f.write('\n')
+
+print('  Merged: hooks config into settings.json')
+PYEOF
+    if [ $? -ne 0 ]; then
+      echo "  Warning: failed to merge hooks into settings.json" >&2
+    fi
   fi
 fi
 
