@@ -28,7 +28,7 @@ When invoked:
 ### Supply Chain
 - New dependencies: check maintainer reputation, download count, last update, known vulnerabilities
 - Lock file changes: unexpected transitive dependency updates
-- `npm audit` / `pip audit` results: critical/high vulnerabilities blocking
+- `pnpm audit` / `uv pip audit` results: critical/high vulnerabilities blocking
 - Version pinning: exact versions for production, not ranges
 - Post-install scripts: review what they execute
 

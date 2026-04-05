@@ -93,6 +93,20 @@ Last updated: 2026-04-04
 | 18 | Skill frontmatter modernization | Done | fork/opus on 5, allowed-tools on 3, paths on 6, user-invocable on 3 |
 | 19 | Agent SDK evaluation | Deferred | Revisit if Tier 3/4 evals show dispatch failures |
 
+## V3 Improvements (language/framework/tooling depth)
+
+| # | Improvement | Status | Notes |
+|---|---|---|---|
+| 20 | Dependency management reference | Planned | Shared ref for backend, frontend, automation skills |
+| 21 | TypeScript strictness rules | Planned | `.claude/rules/typescript.md` with path scope |
+| 22 | Python project structure rules | Planned | `.claude/rules/python.md` with path scope |
+| 23 | Project structure references | Planned | Next.js, React, API frameworks, AI projects |
+| 24 | Error handling patterns | Planned | Backend + frontend refs, production hygiene rules |
+| 25 | Database references expansion | Planned | DynamoDB, MongoDB, PostgreSQL pattern refs |
+| 26 | Google Cloud references | Planned | GCP infra + security refs |
+| 27 | API versioning + auto-docs | Planned | Versioning, semver, OAS generation patterns |
+| 28 | GitHub Actions CI/CD template | Planned | claude-code-action + security-review workflows |
+
 ## What's Left
 
 ### Eval Runs Remaining
@@ -100,19 +114,29 @@ Last updated: 2026-04-04
 - [ ] Run Tier 3 evals (3 architecture-first tests)
 - [ ] Run Tier 4 eval (full pipeline end-to-end)
 
-### V2 Priority Order
-1. ~~Path-scoped rules (#15)~~ — Done
-2. ~~Hooks (#17)~~ — Done
-3. ~~Skill frontmatter (#18)~~ — Done
-4. ~~Dynamic context (#16)~~ — Done
-5. Run remaining evals — validates multi-agent pipelines
-6. Agent SDK (#19) — only if evals reveal dispatch failures
+### V3 Priority Order (system infrastructure first, then content)
+1. TypeScript strictness rules (#21) — path-scoped, immediate quality impact
+2. Python project structure rules (#22) — path-scoped, immediate quality impact
+3. Dependency management reference (#20) — shared across 3 skills
+4. Error handling patterns (#24) — backend + frontend + production hygiene
+5. DynamoDB patterns reference (#25) — primary database, high priority
+6. Next.js patterns reference (#23) — most-used frontend framework
+7. API versioning + auto-docs (#27) — versioning + OAS generation
+8. GitHub Actions CI/CD template (#28) — add to repo template
+9. Additional database refs (#25) — MongoDB, PostgreSQL
+10. Google Cloud references (#26) — when GCP projects start
+11. Run remaining evals — with all new skills/rules in place
 
 ### From improvements/ backlog
 - [x] Add caching patterns to backend-engineering skill — Done
 - [x] Add threat-modeler to Tier 2 evals — Done
 - [x] Wire run-eval.sh to execute evals automatically — Done (--run, --run-tier, --run-all)
 
-### Deferred
+### Deferred / Future
 - Cross-agent memory (#11) — revisit when proven needed in practice
-- CLAUDE.md splitting — evaluate after `.claude/rules/` is in place
+- CLAUDE.md splitting — evaluate after rules/ directory is in place
+- Agent SDK (#19) — revisit if Tier 3/4 evals show dispatch failures
+- React Native patterns — when mobile projects start
+- Desktop app patterns (Electron/Tauri) — when desktop projects start
+- Azure cloud references — when needed
+- Monorepo patterns (pnpm workspaces/Turborepo) — when workspace projects start

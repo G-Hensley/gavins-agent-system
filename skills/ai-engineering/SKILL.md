@@ -1,7 +1,7 @@
 ---
 name: ai-engineering
 description: Build AI-powered applications — agents, chatbots, automation, pipelines, RAG systems, and LLM integrations across any provider (Claude, OpenAI, Hugging Face, local models). Use when building agentic systems, chatbots, AI features, prompt engineering, RAG, fine-tuning workflows, or integrating any LLM. Also use when the user says "build an agent", "chatbot", "AI automation", "LLM", "RAG", "embeddings", "prompt engineering", "AI pipeline", or works with any AI/ML API.
-last_verified: 2026-04-03
+last_verified: 2026-04-04
 ---
 
 # AI Engineering
@@ -66,5 +66,6 @@ Follow `writing-plans` → `subagent-driven-development` for implementation. AI-
 ## Reference Files
 
 - `references/sdk-patterns.md` — Provider integration patterns (Claude, OpenAI, Hugging Face), agent frameworks, tool definitions, multi-turn patterns. Read when building any AI integration.
+- `references/project-structure.md` — AI project layout (agents, chains, prompts, tools, embeddings, retrieval, tests). Read when scaffolding a new AI/LLM project.
 - `references/prompt-engineering.md` — Prompt design, structured output, few-shot patterns, system prompts, context management, RAG prompting. Read when designing prompts for any provider.
 - `ai-engineer` subagent (in `~/.claude/agents/`) — Subagent for reviewing AI application architecture, prompt quality, and provider integration.

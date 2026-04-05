@@ -1,0 +1,48 @@
+name: Claude Code Review
+
+# Trigger on new PRs and every new push to an open PR
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  # -----------------------------------------------------------------
+  # CLAUDE REVIEW — automated PR review via Claude Code Action
+  # Requires: ANTHROPIC_API_KEY stored in GitHub Secrets
+  # -----------------------------------------------------------------
+  claude-review:
+    name: Claude Code Review
+    runs-on: ubuntu-latest
+
+    # Required permissions for the action to post PR comments
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Fetch full history so Claude can see the full diff context
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Customize the review prompt for your project's conventions.
+          # The action appends the PR diff automatically — focus prompt
+          # on what you want Claude to look for, not on describing the diff.
+          prompt: |
+            Review this pull request. Separate your feedback into two sections:
+
+            **Blocking issues** (must fix before merge):
+            - Security vulnerabilities (injection, auth bypass, secrets in code)
+            - Correctness bugs (logic errors, unhandled edge cases, data loss risk)
+            - Breaking changes not reflected in the PR description
+
+            **Suggestions** (non-blocking improvements):
+            - Code clarity and naming
+            - Missing test coverage
+            - Performance concerns
+            - Adherence to project conventions
+
+            Be concise. Skip praise. If there are no blocking issues, say so explicitly.

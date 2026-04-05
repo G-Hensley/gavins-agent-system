@@ -55,7 +55,7 @@ Fields for stop events: `transcript`
 
 **Bash patterns:**
 - Dangerous commands: `rm\s+-rf|chmod\s+777|dd\s+if=`
-- Package installs: `npm\s+install\s+|pip\s+install`
+- Package installs: `pnpm\s+add\s+|uv\s+add`
 - Force operations: `--force|--hard|-f\s`
 
 **File patterns:**
@@ -120,7 +120,7 @@ action: block
 conditions:
   - field: transcript
     operator: not_contains
-    pattern: npm test|pytest|cargo test|vitest|pnpm test
+    pattern: pnpm test|uv run pytest|cargo test|vitest
 ---
 No test commands found in this session. Run tests to verify changes before stopping.
 ```

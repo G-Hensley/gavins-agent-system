@@ -562,6 +562,314 @@ Stay file-based. The skill-router + dispatch table + hooks stack covers the curr
 
 ---
 
+## 20. Dependency Management Skill
+
+No skill codifies *how* to evaluate, add, or manage dependencies. The appsec-reviewer checks for vulnerabilities after the fact, but nobody guides the decision to add a dependency in the first place.
+
+### Shared Reference: `references/dependency-management.md`
+
+Add to `backend-engineering`, `frontend-engineering`, and `automation-engineering` skills. Contents:
+
+- **Add vs. build decision**: If it's < 50 lines, has no transitive deps, and you understand the domain — write it yourself. If it's a solved, complex problem (crypto, date handling, compression) — use a library.
+- **Evaluation checklist**: Maintenance activity (last commit < 6 months), download count, open issues/PR ratio, number of contributors (avoid single-maintainer for critical deps), license compatibility (MIT/Apache preferred), bundle size (for frontend), transitive dependency count.
+- **Version strategy**: Pin exact versions for production deps. Use ranges only for devDependencies. Update intentionally — security patches immediately, minor versions weekly, major versions as planned work.
+- **Lock file discipline**: Always commit `pnpm-lock.yaml` / `uv.lock`. Use `--frozen-lockfile` in CI. Review lock file diffs in PRs for unexpected transitive changes.
+- **Audit cadence**: Run `pnpm audit` / `uv pip audit` before every PR merge. Block on critical/high. Document exceptions with linked issues.
+- **Removal hygiene**: When removing a dep, verify no transitive consumers remain. Remove from lock file. Check bundle size delta.
+
+### Actions
+
+- [ ] Create `references/dependency-management.md` as a shared reference
+- [ ] Add to `backend-engineering`, `frontend-engineering`, and `automation-engineering` skill reference lists
+- [ ] Add dependency evaluation to the `appsec-reviewer` agent's pre-review checklist
+
+---
+
+## 21. TypeScript Strictness Rules
+
+"No `any`" is a start but barely scratches the surface. These rules should load automatically on every `.ts` / `.tsx` file via path-scoped rules.
+
+### `.claude/rules/typescript.md`
+
+```yaml
+---
+paths:
+  - "**/*.ts"
+  - "**/*.tsx"
+---
+```
+
+Rules to include:
+
+- `strict: true` in tsconfig — non-negotiable. Not just `strictNullChecks`, the full suite.
+- No `any`. Use `unknown` for external data boundaries, then narrow with Zod or type guards.
+- No `as` type assertions without a comment explaining why. Prefer `satisfies` for type narrowing.
+- No `@ts-ignore` or `@ts-expect-error` without a linked issue number.
+- Branded types for IDs: `type UserId = string & { __brand: 'UserId' }` — prevents passing `teamId` where `userId` is expected.
+- Prefer `interface` for object shapes, `type` for unions/intersections/utilities.
+- Exhaustive switch statements with `never` default for discriminated unions.
+- No implicit return types on exported functions — always annotate.
+- Zod schemas as the source of truth for runtime validation; infer TypeScript types from them (`z.infer<typeof Schema>`).
+
+---
+
+## 22. Python Project Structure Rules
+
+### `.claude/rules/python.md`
+
+```yaml
+---
+paths:
+  - "**/*.py"
+  - "**/pyproject.toml"
+---
+```
+
+Rules to include:
+
+- Always `pyproject.toml` — never `setup.py`, `setup.cfg`, or `requirements.txt`.
+- `src/` layout: `src/<package_name>/` with `__init__.py`. Tests in `tests/` at project root.
+- `uv` for everything: `uv init`, `uv add`, `uv run`, `uv sync`. Never raw `pip`.
+- Type hints on every function signature. Use `from __future__ import annotations` for modern syntax.
+- `py.typed` marker file in packages intended for external consumption.
+- `ruff` for linting AND formatting (replaces flake8, black, isort, pyflakes). Single tool, one config section in `pyproject.toml`.
+- Dataclasses or Pydantic for data structures — never raw dicts for structured data.
+- `asyncio` patterns: prefer `async/await` over threading. Use `asyncio.gather()` for parallel I/O.
+- No `print()` in production code — use `logging` module with structured output. `print()` is acceptable only in CLI entry points.
+- Minimum Python version: 3.11+ (for `tomllib`, exception groups, `StrEnum`).
+
+---
+
+## 23. Project Structure References (Per Framework)
+
+Each framework has idiomatic project layouts. Claude defaults to generic structures without this guidance.
+
+### References to Create
+
+**`frontend-engineering/references/nextjs-patterns.md`**:
+- App Router directory structure (`app/`, `components/`, `lib/`, `hooks/`)
+- When to use `use client` (only at the leaf, never on pages)
+- Server Actions vs. API routes (prefer actions for mutations, routes for external consumers)
+- Loading/error boundary patterns per route segment
+- `generateStaticParams` vs. dynamic rendering decisions
+- Metadata API for SEO
+- `revalidatePath` / `revalidateTag` caching strategy
+
+**`frontend-engineering/references/react-patterns.md`**:
+- Component structure: feature-based folders, not type-based
+- Custom hooks for shared logic, not utility files
+- Composition over prop drilling — use context sparingly, prefer passing components as props
+- Suspense boundaries and error boundaries at route level
+
+**`backend-engineering/references/api-frameworks.md`**:
+- FastAPI (Python): routers, dependency injection, Pydantic models, middleware
+- Express/Hono (TypeScript): route handlers, middleware chains, Zod validation
+- Spring Boot (Java): controllers, services, repositories, dependency injection
+
+**`ai-engineering/references/project-structure.md`**:
+- Agent projects: prompts/, tools/, agents/, evaluation/, config/
+- RAG projects: ingestion/, retrieval/, generation/, evaluation/
+- Prompt versioning and testing patterns
+
+### Future (When Needed)
+
+- **React Native**: When building mobile apps — project structure, navigation patterns, platform-specific code organization, Expo vs. bare workflow
+- **Desktop (Electron/Tauri)**: When building desktop apps — main/renderer process separation, IPC patterns, native module integration, auto-update
+- **Monorepo (pnpm workspaces/Turborepo)**: Workspace layout, shared packages, incremental builds, CI that only tests what changed
+
+### Actions
+
+- [ ] Create Next.js and React pattern references under `frontend-engineering/references/`
+- [ ] Create API frameworks reference under `backend-engineering/references/`
+- [ ] Create AI project structure reference under `ai-engineering/references/`
+- [ ] Log React Native and desktop app references as future items when those projects start
+
+---
+
+## 24. Error Handling Patterns
+
+No explicit error handling guidance exists. Claude tends to either swallow errors or throw generic ones.
+
+### Reference: `backend-engineering/references/error-handling.md`
+
+- **Never catch and ignore.** Every catch block must log, re-throw, or handle with a specific recovery.
+- **Typed error classes per domain**: `NotFoundError`, `ValidationError`, `AuthorizationError`, `ConflictError` — not generic `Error` or string messages.
+- **Errors carry context**: What failed, why, what was attempted, correlation ID for tracing.
+- **Distinguish operational vs. programmer errors**: Operational (network timeout, invalid input) → handle gracefully, maybe retry. Programmer (null reference, type error) → crash fast, fix the bug.
+- **HTTP status code mapping**: `ValidationError` → 400, `AuthorizationError` → 403, `NotFoundError` → 404, `ConflictError` → 409, unhandled → 500. Never return 200 with an error body.
+- **Error responses are structured**: `{ error: { code: string, message: string, details?: unknown } }` — never raw strings.
+- **Logging levels matter**: ERROR for failures requiring attention, WARN for degraded but functional, INFO for normal operations, DEBUG for development only.
+
+### Reference: `frontend-engineering/references/error-handling.md`
+
+- Error boundaries at route level, not component level
+- Toast/notification for user-facing errors, never raw error messages
+- Retry with backoff for network failures
+- Distinguish between "try again" errors and "contact support" errors
+
+### Production Hygiene Rules
+
+Add to `.claude/rules/` or as a hook:
+
+- **No `console.log()` in production code** — use structured logging. `console.log` is for debugging only, remove before merging.
+- **No `print()` in production Python** — use `logging` module.
+- **No `debugger` statements** — ever.
+- **No `TODO` or `FIXME` without an issue link** — either fix it now or track it properly.
+
+### Actions
+
+- [ ] Create error handling references for both backend and frontend engineering skills
+- [ ] Add production hygiene rules as a `.claude/rules/production.md` with path scope
+- [ ] Consider a `PreToolUse` hook on `Bash(git commit *)` that greps for `console.log` / `print()` / `debugger` in staged files
+
+---
+
+## 25. Database References Expansion
+
+The current `database-engineering` skill is generic. Each database has its own patterns.
+
+### References to Create
+
+**`database-engineering/references/dynamodb-patterns.md`** (high priority — primary DB):
+- Single-table vs. multi-table design decisions
+- Access pattern analysis BEFORE schema design — list all queries first
+- Partition key and sort key design for even distribution
+- GSI design: overloaded keys, sparse indexes, projection optimization
+- Write sharding for hot partitions
+- TTL for data lifecycle management
+- Transaction patterns and limitations (25-item limit, idempotency tokens)
+- DynamoDB Streams for event-driven patterns
+- Cost optimization: on-demand vs. provisioned, reserved capacity
+
+**`database-engineering/references/mongodb-patterns.md`**:
+- Document model design — embed vs. reference decision tree
+- Schema validation with JSON Schema
+- Indexing strategy: compound indexes, covered queries, index intersection
+- Aggregation pipeline patterns
+- Change streams for real-time
+- Sharding considerations
+
+**`database-engineering/references/postgresql-patterns.md`** (for when SQL is needed):
+- Schema design, normalization decisions
+- Index types: B-tree, GIN, GiST, BRIN — when to use each
+- Query optimization: EXPLAIN ANALYZE, common anti-patterns
+- Migration safety: backward-compatible changes, zero-downtime patterns
+- Connection pooling (PgBouncer)
+- JSONB for semi-structured data within relational context
+
+### Actions
+
+- [ ] Create DynamoDB patterns reference (highest priority)
+- [ ] Create MongoDB patterns reference
+- [ ] Create PostgreSQL patterns reference
+- [ ] Update `database-engineer` agent to reference database-specific patterns based on the project's DB
+
+---
+
+## 26. Cloud Provider Expansion (Google Cloud)
+
+The system is AWS-only. Adding Google Cloud references enables working on GCP projects.
+
+### References to Create
+
+**`devops/references/gcp-infrastructure.md`**:
+- Cloud Run, Cloud Functions, GKE — equivalent mapping to AWS Lambda/ECS
+- Cloud SQL, Firestore, BigQuery — database options
+- IAM: service accounts, workload identity, least-privilege
+- Secret Manager, Cloud KMS
+- Cloud Build for CI/CD
+- Terraform patterns for GCP (most teams use Terraform over Deployment Manager)
+
+**`security/references/gcp-security.md`**:
+- Service account key management (prefer workload identity federation)
+- VPC Service Controls
+- Organization policies
+- Security Command Center
+- IAM Conditions and context-aware access
+
+### Actions
+
+- [ ] Create GCP infrastructure reference under `devops/references/`
+- [ ] Create GCP security reference under `security/references/`
+- [ ] Update `cloud-security-reviewer` agent to handle GCP patterns alongside AWS
+- [ ] Consider adding Azure references as a future item if needed
+
+---
+
+## 27. API Versioning, App Versioning & Auto-Documentation
+
+### API Versioning Reference: `api-design/references/versioning.md`
+
+- URL path versioning (`/v1/users`) for public APIs — most explicit, easiest for consumers
+- Header versioning (`Accept: application/vnd.api+json;version=1`) for internal APIs
+- Backward compatibility rules: additive changes only in minor versions (new fields OK, removing/renaming fields is a breaking change)
+- Deprecation lifecycle: announce → warn (header) → sunset date → remove
+- Contract testing between frontend and backend (Pact, or Zod schemas shared via package)
+
+### App/Release Versioning Reference
+
+- Semantic versioning: MAJOR.MINOR.PATCH — follow it strictly
+- Git tags for releases (`v1.2.3`)
+- Automated version bumping in CI (conventional commits → auto-version)
+- GitHub Releases with auto-generated changelogs (`gh release create`)
+- Package version in `package.json` / `pyproject.toml` matches git tag
+- Pre-release versions: `1.2.3-rc.1` for release candidates
+
+### Auto-Documentation Skill/Reference
+
+Generate API documentation from code rather than maintaining it separately:
+
+- **OpenAPI/Swagger generation**:
+  - FastAPI: built-in OAS generation from Pydantic models — just configure metadata
+  - Express/Hono: `zod-openapi` or `tsoa` to generate OAS from Zod schemas
+  - Spring Boot: `springdoc-openapi` for auto-generation from annotations
+- **Keep spec and code in sync**: OAS spec is generated from code, never hand-edited. CI check that spec matches implementation.
+- **Documentation hosting**: Redoc or Swagger UI auto-deployed from generated spec
+- **Client SDK generation**: `openapi-typescript` to generate typed clients from OAS spec
+
+### Actions
+
+- [ ] Create API versioning reference under `api-design/references/`
+- [ ] Create app versioning reference (could live in `git-workflow/references/versioning.md`)
+- [ ] Create auto-documentation reference under `api-design/references/` or a new `doc-writing/references/api-docs.md`
+- [ ] Consider a `/generate-api-docs` command that runs OAS generation for the current project
+
+---
+
+## 28. GitHub Actions for CI/CD Template
+
+Every project with code should have automated PR review via Claude Code's GitHub Actions.
+
+### Workflow Files for Repo Template
+
+**`.github/workflows/claude-review.yml`** — General PR review:
+- Triggers on: PR opened, updated, @claude mentioned
+- Uses `anthropics/claude-code-action@v1`
+- Respects repo's CLAUDE.md for project-specific rules
+- Reviews for bugs, security, performance, style
+
+**`.github/workflows/security-review.yml`** — Security-focused review:
+- Triggers on: every PR
+- Uses `anthropics/claude-code-security-review@main`
+- Comments findings directly on the PR
+- Lighter weight than full review
+
+### Template Integration
+
+- Add both workflow files to your GitHub repo template
+- Include setup instructions for adding `ANTHROPIC_API_KEY` secret
+- Include a CLAUDE.md stub with baseline code standards so every repo inherits minimum review quality
+- Consider `pnpm audit` / `uv pip audit` as additional CI steps
+
+### Actions
+
+- [ ] Create both workflow files
+- [ ] Add to GitHub repo template
+- [ ] Document setup in template README
+- [ ] Test with a real PR
+
+---
+
 ## Priority Order
 
 Suggested sequence for working through these:
@@ -581,14 +889,34 @@ Suggested sequence for working through these:
 12. ~~Improvements backlog (#4)~~ — done, seeded with 3 suggestions
 13. ~~Plans hygiene (#6)~~ — done
 
-### Next Up (v2 — from research report findings)
+### Next Up (v2 — system infrastructure)
 14. **Path-scoped rules** (#15) — move domain instructions out of CLAUDE.md into `.claude/rules/` with globs
-15. **Hooks for enforcement** (#17) — TDD enforcement, pre-commit validation, destructive command guards
-16. **Skill frontmatter modernization** (#18) — `context: fork`, `paths:`, `allowed-tools:` across all skills
-17. **Dynamic context in skills** (#16) — `!`command`` syntax for live state injection
-18. **Run remaining evals** — Tier 2, 3, 4 to validate multi-agent and full-pipeline workflows
-19. **Agent SDK evaluation** (#19) — revisit if Tier 3/4 evals show dispatch failures
+15. **TypeScript strictness rules** (#21) — `.claude/rules/typescript.md` with path scope
+16. **Python project structure rules** (#22) — `.claude/rules/python.md` with path scope
+17. **Hooks for enforcement** (#17) — TDD enforcement, pre-commit validation, console.log/print guards
+18. **Skill frontmatter modernization** (#18) — `context: fork`, `paths:`, `allowed-tools:` across all skills
+19. **Dynamic context in skills** (#16) — `!`command`` syntax for live state injection
 
-### Deferred
+### Next Up (v2 — skill and reference content)
+20. **Dependency management reference** (#20) — shared across backend, frontend, automation skills
+21. **Error handling patterns** (#24) — backend + frontend references, production hygiene rules
+22. **DynamoDB patterns reference** (#25) — highest-priority database reference
+23. **Next.js patterns reference** (#23) — App Router patterns for frontend-engineering
+24. **API versioning + auto-documentation** (#27) — versioning reference + OAS generation patterns
+25. **GitHub Actions CI/CD template** (#28) — claude-code-action + security-review workflows
+
+### Later (v2 — expand coverage)
+26. **Additional database references** (#25) — MongoDB, PostgreSQL
+27. **Google Cloud references** (#26) — GCP infra + security
+28. **Additional project structure references** (#23) — React patterns, API frameworks, AI project structure
+29. **App versioning + GitHub releases** (#27) — semver, git tags, auto-changelog
+30. **Run remaining evals** — Tier 2, 3, 4 with updated skills
+31. **Agent SDK evaluation** (#19) — revisit if Tier 3/4 evals show dispatch failures
+
+### Deferred / Future
 - Cross-agent memory (#11) — revisit when proven needed in practice
 - CLAUDE.md splitting (#5 proposed split) — evaluate after rules/ directory is in place
+- React Native patterns (#23) — when mobile projects start
+- Desktop app patterns (#23) — when Electron/Tauri projects start
+- Azure cloud references (#26) — when needed
+- Monorepo patterns (#23) — when workspace projects start

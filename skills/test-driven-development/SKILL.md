@@ -1,8 +1,7 @@
 ---
 name: test-driven-development
 description: Enforce red-green-refactor cycle for all implementation work. Use when implementing any feature, bugfix, refactoring, or behavior change — before writing any production code. Also use when the user mentions TDD, testing strategy, or asks to add tests.
-follows: writing-plans
-last_verified: 2026-04-03
+last_verified: 2026-04-04
 ---
 
 # Test-Driven Development

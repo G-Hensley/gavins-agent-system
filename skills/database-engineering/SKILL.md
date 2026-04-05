@@ -1,8 +1,7 @@
 ---
 name: database-engineering
 description: Database design, query optimization, migrations, and data modeling for SQL and NoSQL databases. Use when designing schemas, writing queries, optimizing performance, planning migrations, or working with DynamoDB, PostgreSQL, MySQL, or any database. Also use when the user says "database", "schema", "query", "migration", "index", "data model", or "DynamoDB".
-last_verified: 2026-04-03
-paths: ["**/*.sql", "**/migrations/**", "**/models/**"]
+last_verified: 2026-04-04
 ---
 
 # Database Engineering
@@ -42,4 +41,8 @@ Dispatch the `database-engineer` subagent for schema design and migration work.
 - `references/schema-design.md` — Entity modeling, normalization, denormalization, indexing strategy, DynamoDB vs SQL patterns.
 - `references/query-optimization.md` — Query performance, N+1 prevention, index usage, EXPLAIN analysis, pagination.
 - `references/migrations.md` — Safe schema changes, zero-downtime migrations, rollback strategies, data backfills.
+- `references/dynamodb-patterns.md` — Single-table design, key patterns, GSI overloading, transactions, streams, TTL, capacity planning.
+- `references/mongodb-patterns.md` — Embed vs reference, indexes, aggregation pipeline, transactions, connection management.
+- `references/postgresql-patterns.md` — Schema constraints, index types, CTEs, window functions, zero-downtime migrations, connection pooling.
+
 **Subagent:** `database-engineer` — designs schemas, writes migrations, optimizes queries. Located at `~/.claude/agents/database-engineer.md`.

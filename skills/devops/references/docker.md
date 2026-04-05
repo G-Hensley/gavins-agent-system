@@ -50,11 +50,11 @@ services:
 
 ## Python Images
 ```dockerfile
-FROM python:3.11-slim AS base
+FROM python:3.12-slim AS base
 WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY pyproject.toml uv.lock ./
+RUN pip install uv && uv sync --frozen --no-dev
 COPY . .
 USER nobody
-CMD ["python", "-m", "src.main"]
+CMD ["uv", "run", "python", "-m", "src.main"]
 ```

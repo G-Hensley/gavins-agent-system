@@ -56,7 +56,7 @@ async function gitInit(directory: string) {
 Use `console.error()` in tests (not logger — may be suppressed). Log before the dangerous operation, not after it fails.
 
 ```bash
-npm test 2>&1 | grep 'DEBUG git init'
+pnpm test 2>&1 | grep 'DEBUG git init'
 ```
 
 ## Finding Which Test Causes Pollution

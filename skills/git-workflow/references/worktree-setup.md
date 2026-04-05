@@ -24,10 +24,9 @@ cd <path>/<branch-name>
 
 ### 3. Run Project Setup
 Auto-detect from project files:
-- `package.json` → `npm install` (or `pnpm install`)
+- `package.json` → `pnpm install`
 - `Cargo.toml` → `cargo build`
-- `requirements.txt` → `pip install -r requirements.txt`
-- `pyproject.toml` → `poetry install` or `pip install -e .`
+- `pyproject.toml` → `uv sync`
 - `go.mod` → `go mod download`
 
 ### 4. Verify Clean Baseline

@@ -1,8 +1,7 @@
 ---
 name: frontend-engineering
 description: Frontend development with React, Next.js, TypeScript — component architecture, state management, performance, and implementation. Use when building React components, pages, or applications. Also use when the user says "React", "Next.js", "component", "state management", "frontend performance", "SSR", "client-side", or when implementing designs from the UI/UX design system. Works FROM architecture decisions and frontend-design's design system docs.
-last_verified: 2026-04-03
-paths: ["**/*.tsx", "**/*.jsx", "**/*.css"]
+last_verified: 2026-04-04
 ---
 
 # Frontend Engineering
@@ -45,5 +44,7 @@ Dispatch the `frontend-engineer` subagent for implementation.
 
 - `references/react-patterns.md` — Component patterns, hooks, state management, TypeScript with React. Read when building React components.
 - `references/nextjs-patterns.md` — App Router, server/client components, data fetching, routing, middleware. Read when building Next.js apps.
+- `references/nextjs-structure.md` — Project directory layout, file colocation, server/client boundaries, route organization. Read when scaffolding a new Next.js project or adding directories.
 - `references/performance.md` — Code splitting, lazy loading, memoization, bundle optimization, Core Web Vitals. Read when optimizing frontend performance.
+- `references/error-handling.md` — Error boundaries, async errors, user-facing error display, network resilience, form validation. Read when implementing error handling in React/Next.js.
 **Subagent:** `frontend-engineer` — implements React/Next.js from architecture + design system. Located at `~/.claude/agents/frontend-engineer.md`.

@@ -1,0 +1,136 @@
+name: CI
+
+# Triggers: all pushes to main and every PR targeting main
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # -----------------------------------------------------------------
+  # LINT — fastest gate, runs first
+  # -----------------------------------------------------------------
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Detect secrets before anything else leaves the repo
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # --- Node projects: uncomment this block ---
+      # - uses: actions/setup-node@v4
+      #   with:
+      #     node-version: 20
+      #     cache: 'npm'
+      # - run: npm ci
+      # - run: npm run lint
+
+      # --- Python projects: uncomment this block ---
+      # - uses: actions/setup-python@v5
+      #   with:
+      #     python-version: '3.11'
+      #     cache: 'pip'
+      # - run: pip install ruff
+      # - run: ruff check .
+
+  # -----------------------------------------------------------------
+  # TEST — matrix across runtime versions, blocked by lint
+  # -----------------------------------------------------------------
+  test:
+    name: Test (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    needs: lint
+
+    strategy:
+      matrix:
+        # Adjust versions to match your supported range
+        node-version: [18, 20]
+        # python-version: ["3.11", "3.12"]
+      fail-fast: true   # stop all matrix jobs on first failure
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- Node ---
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npm test -- --coverage
+
+      # --- Python (swap above block for this) ---
+      # - uses: actions/setup-python@v5
+      #   with:
+      #     python-version: ${{ matrix.python-version }}
+      #     cache: 'pip'
+      # - run: pip install -r requirements.txt
+      # - run: pytest --tb=short
+
+  # -----------------------------------------------------------------
+  # SECURITY SCAN — dependency audit + container image scan
+  # -----------------------------------------------------------------
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Dependency audit — fail on high/critical findings
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+      - run: npm audit --audit-level=high
+
+      # --- Python dependency audit (swap/add as needed) ---
+      # - run: pip install pip-audit && pip-audit -r requirements.txt
+
+      # Build image for scanning (only when a Dockerfile exists)
+      - name: Build image
+        if: hashFiles('Dockerfile') != ''
+        run: docker build -t scan-target:${{ github.sha }} .
+
+      # Container vulnerability scan via Trivy
+      - name: Trivy container scan
+        if: hashFiles('Dockerfile') != ''
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          image-ref: scan-target:${{ github.sha }}
+          exit-code: 1
+          severity: CRITICAL,HIGH
+          format: table
+
+  # -----------------------------------------------------------------
+  # DEPLOY — only on pushes to main, requires all gates to pass
+  # -----------------------------------------------------------------
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: [test, security-scan]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    # Use OIDC for cloud auth — no static keys in secrets
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- AWS OIDC auth example ---
+      # - uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     role-to-assume: arn:aws:iam::123456789012:role/github-actions-deploy
+      #     aws-region: us-east-1
+
+      # Add your deploy step here (CDK deploy, ECS update, etc.)
+      - run: echo "Deploy step — replace with your deployment command"
