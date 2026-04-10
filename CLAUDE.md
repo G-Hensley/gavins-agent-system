@@ -36,6 +36,7 @@ When you add, remove, or rename an agent, skill, command, or any structural elem
 - **CSS**: Tailwind with design system values from config. No arbitrary values.
 - **AWS**: Lambda, DynamoDB, S3, Cognito, Secrets Manager, EventBridge. Least-privilege IAM always.
 - **Testing**: pytest via `uv run pytest` (Python), Vitest (TS), Playwright (E2E).
+- **Context7**: Always use Context7 MCP to look up library/framework docs before using any third-party API. Do not rely on training data for package APIs — check the current docs first.
 
 ## Agent Dispatch Guide
 

@@ -44,5 +44,13 @@ Dispatch the `uiux-designer` subagent to create design systems, or use its outpu
 
 ## Reference Files
 
-- `references/design-principles.md` — Color theory, typography, whitespace, hierarchy, responsive patterns, and Tailwind/CSS implementation guidance. Read before any UI work.
+Read the relevant references before any UI work:
+
+- `references/design-principles.md` — Core principles summary: hierarchy, whitespace, responsive, components, accessibility
+- `references/design-styles.md` — Visual aesthetics: minimalist, glassmorphism, neumorphism, claymorphism, brutalism, material, corporate, dark mode
+- `references/typography.md` — Font families, pairing rules, type scales, readability, line height, responsive typography
+- `references/color-theory.md` — Color psychology, palette types (mono/analogous/complementary/triadic), 60-30-10 rule, contrast, accessibility
+- `references/layout-principles.md` — Alignment, grids, proximity, balance, symmetry, repetition, whitespace, responsive patterns
+- `references/design-laws.md` — Golden ratio, rule of thirds, Gestalt principles, Fitts's law, Hick's law, Miller's law, Jakob's law
+
 **Subagent:** `uiux-designer` — creates design systems, color palettes, typography, component specs. Located at `~/.claude/agents/uiux-designer.md`.

@@ -27,8 +27,10 @@ strategy:
 ## Dependency Caching
 ```yaml
 # Node
+- uses: pnpm/action-setup@v4
+  with: { version: 9 }
 - uses: actions/setup-node@v4
-  with: { node-version: 20, cache: 'npm' }   # or 'pnpm', 'yarn'
+  with: { node-version: 20, cache: 'pnpm' }
 
 # Python
 - uses: actions/setup-python@v5
@@ -50,7 +52,7 @@ Cache key must include a lock file hash — stale caches are worse than no cache
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 # Dependency audit
-- run: npm audit --audit-level=high      # or: pip-audit -r requirements.txt
+- run: pnpm audit --audit-level=high      # or: uv pip audit
 
 # Container image scan
 - uses: aquasecurity/trivy-action@0.20.0

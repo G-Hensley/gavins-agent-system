@@ -23,20 +23,22 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # --- Node projects: uncomment this block ---
+      # - uses: pnpm/action-setup@v4
+      #   with:
+      #     version: 9
       # - uses: actions/setup-node@v4
       #   with:
       #     node-version: 20
-      #     cache: 'npm'
-      # - run: npm ci
-      # - run: npm run lint
+      #     cache: 'pnpm'
+      # - run: pnpm install --frozen-lockfile
+      # - run: pnpm lint
 
       # --- Python projects: uncomment this block ---
       # - uses: actions/setup-python@v5
       #   with:
       #     python-version: '3.11'
-      #     cache: 'pip'
-      # - run: pip install ruff
-      # - run: ruff check .
+      # - run: pip install uv && uv sync --frozen
+      # - run: uv run ruff check .
 
   # -----------------------------------------------------------------
   # TEST — matrix across runtime versions, blocked by lint
@@ -57,20 +59,22 @@ jobs:
       - uses: actions/checkout@v4
 
       # --- Node ---
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-      - run: npm ci
-      - run: npm test -- --coverage
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test -- --coverage
 
       # --- Python (swap above block for this) ---
       # - uses: actions/setup-python@v5
       #   with:
       #     python-version: ${{ matrix.python-version }}
-      #     cache: 'pip'
-      # - run: pip install -r requirements.txt
-      # - run: pytest --tb=short
+      # - run: pip install uv && uv sync --frozen
+      # - run: uv run pytest --tb=short
 
   # -----------------------------------------------------------------
   # SECURITY SCAN — dependency audit + container image scan
@@ -84,15 +88,18 @@ jobs:
       - uses: actions/checkout@v4
 
       # Dependency audit — fail on high/critical findings
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
-      - run: npm ci
-      - run: npm audit --audit-level=high
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm audit --audit-level=high
 
       # --- Python dependency audit (swap/add as needed) ---
-      # - run: pip install pip-audit && pip-audit -r requirements.txt
+      # - run: pip install uv && uv sync --frozen && uv pip audit
 
       # Build image for scanning (only when a Dockerfile exists)
       - name: Build image

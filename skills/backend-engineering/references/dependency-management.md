@@ -1,8 +1,8 @@
 # Dependency Management
 
-## Node.js
+## Node.js (pnpm only)
 
-**Lockfile discipline** — always commit `package-lock.json`. Use `npm ci` in CI (deterministic, fast, fails on lockfile mismatch). Never `npm install` in CI.
+**Lockfile discipline** — always commit `pnpm-lock.yaml`. Use `pnpm install --frozen-lockfile` in CI (deterministic, fast, fails on lockfile mismatch). Never `pnpm install` without lockfile in CI.
 
 **Version pinning** — use exact versions for applications, `^` ranges for libraries.
 ```json
@@ -20,45 +20,45 @@
 }
 ```
 
-**Auditing** — run `npm audit` before merging PRs. Fix auto-fixable issues with `npm audit fix`. Manual review for breaking changes from `npm audit fix --force`.
+**Auditing** — run `pnpm audit` before merging PRs. Fix auto-fixable issues with `pnpm audit --fix`. Manual review for breaking changes.
 
 **Docker** — keep `devDependencies` out of production images.
 ```dockerfile
 FROM node:20-slim AS build
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci
+RUN corepack enable
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 COPY . .
-RUN npm run build
+RUN pnpm build
 
 FROM node:20-slim
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci --omit=dev
+RUN corepack enable
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile --prod
 COPY --from=build /app/dist ./dist
 CMD ["node", "dist/index.js"]
 ```
 
-## Python
+## Python (uv only)
 
-**Lockfile workflow** — use `pip-tools` for reproducible installs.
+**Lockfile workflow** — use `uv` for reproducible installs.
 ```bash
-# requirements.in — what you depend on (ranges for libs, pins for apps)
-fastapi==0.109.0
-pydantic>=2.0,<3.0
-
+# pyproject.toml is the single source of truth
 # Generate lockfile
-pip-compile requirements.in -o requirements.txt
+uv lock
 
 # Install from lockfile (CI and deploys)
-pip install -r requirements.txt
+uv sync --frozen
 ```
 
-**Virtual environments** — always isolate. Never install into system Python.
+**Virtual environments** — `uv` manages these automatically. Never use `pip`, `poetry`, or `pipenv`.
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+# uv creates and manages .venv automatically
+uv sync          # install deps into .venv
+uv run pytest    # run commands in the venv
+uv add fastapi   # add a dependency
 ```
 
 **Project metadata** — use `pyproject.toml` as the single source of truth.
@@ -72,15 +72,11 @@ dependencies = [
     "pydantic>=2.0,<3.0",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = ["pytest>=8.0", "ruff>=0.2"]
 ```
 
-**Auditing** — run `pip audit` before merging. Fails on known vulnerabilities.
-```bash
-pip install pip-audit
-pip-audit -r requirements.txt
-```
+**Auditing** — run `uv pip audit` before merging. Fails on known vulnerabilities.
 
 ## Cross-Language
 
@@ -104,9 +100,9 @@ updates:
 
 **Before major version bumps** — read changelog, check for breaking changes in your usage, run full test suite, update one major dep per PR to isolate blast radius.
 
-**Lock transitive deps** — lockfiles (`package-lock.json`, `requirements.txt` from pip-compile) pin the full dependency tree. Without them, builds are non-deterministic.
+**Lock transitive deps** — lockfiles (`pnpm-lock.yaml`, `uv.lock`) pin the full dependency tree. Without them, builds are non-deterministic.
 
-**Separate dev and prod deps** — dev tools (linters, test frameworks, type checkers) never ship to production. Use `devDependencies` (Node) or `[project.optional-dependencies]` (Python).
+**Separate dev and prod deps** — dev tools (linters, test frameworks, type checkers) never ship to production. Use `devDependencies` (Node) or `[dependency-groups]` (Python).
 
 **License compliance:**
 | License | Status | Notes |
@@ -116,4 +112,4 @@ updates:
 | GPL, AGPL | Avoid | Copyleft — can infect your codebase |
 | No license | Avoid | No legal right to use |
 
-Check with `npx license-checker --summary` (Node) or `pip-licenses` (Python).
+Check with `pnpm licenses list` (Node) or `uv pip list --format=columns` (Python).

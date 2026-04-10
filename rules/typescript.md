@@ -42,5 +42,6 @@ paths:
 - Co-locate: `foo.test.ts` next to `foo.ts`
 
 ## Dependencies
-- `npm audit` when adding/updating packages
+- `pnpm audit` when adding/updating packages — never use npm or yarn
 - Exact versions in `package.json` for production deps
+- Use Context7 MCP to verify library APIs before using them

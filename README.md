@@ -4,7 +4,7 @@ A portable, version-controlled configuration of Claude Code skills, agents, comm
 
 ## What This Is
 
-This repository packages Gavin Hensley's complete Claude Code environment — 27 reusable skills, 24 specialist agents, slash commands, persistent agent memory, and global Claude instructions. Everything is designed for API security, CLI tooling, backend/frontend development, and multi-agent automation.
+This repository packages Gavin Hensley's complete Claude Code environment — 28 reusable skills, 24 specialist agents, slash commands, persistent agent memory, and global Claude instructions. Everything is designed for API security, CLI tooling, backend/frontend development, and multi-agent automation.
 
 Instead of scattering configuration across machines, this system is:
 - **Version-controlled** — Every skill, agent, and setting is in git. Review changes, rollback mistakes, share improvements.
@@ -15,7 +15,7 @@ Instead of scattering configuration across machines, this system is:
 ## Repository Structure
 
 ```
-skills/              # 27 reusable skills (each with SKILL.md + references/)
+skills/              # 28 reusable skills (each with SKILL.md + references/)
 agents/              # 24 specialist agents (prompts + configuration)
 commands/            # 5 slash commands (/improve, /plan, /review, /setup, /status)
 agent-memory/        # Persistent learnings per agent (loaded per session)
@@ -164,9 +164,9 @@ The `settings.json` file contains safe defaults:
   "permissions": {
     "allow": [
       "Bash(git ...)",
-      "Bash(npm ...)",
-      "Bash(pip ...)",
-      "Bash(python -m pytest ...)"
+      "Bash(pnpm ...)",
+      "Bash(uv ...)",
+      "Bash(gh ...)"
     ],
     "additionalDirectories": []
   }
