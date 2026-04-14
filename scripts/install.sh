@@ -4,9 +4,30 @@ set -euo pipefail
 # Install Gavin's Claude Code Agent System
 # Symlinks or copies skills, agents, commands, and config into ~/.claude/
 
+# On Windows (Git Bash / MSYS), force `ln -s` to create real Windows symlinks
+# and fail loudly if it can't. Without this, MSYS silently falls back to copying,
+# which defeats the whole point of the install (edits don't flow back to the repo).
+# Requires Developer Mode enabled, or running shell as Administrator.
+export MSYS=winsymlinks:nativestrict
+export MSYS2_ARG_CONV_EXCL="*"
+
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 CLAUDE_DIR="$HOME/.claude"
 SETTINGS_FILE="$CLAUDE_DIR/settings.json"
+
+# Translate a POSIX path (/c/Users/...) to a native Windows path (C:\Users\...)
+# when running under MSYS/Cygwin. Windows-native Python can't open /c/... paths,
+# so any path we pass to `python3 -c` must be converted first. No-op elsewhere.
+to_native_path() {
+  if command -v cygpath >/dev/null 2>&1; then
+    cygpath -w "$1"
+  else
+    printf '%s' "$1"
+  fi
+}
+
+REPO_DIR_NATIVE="$(to_native_path "$REPO_DIR")"
+SETTINGS_FILE_NATIVE="$(to_native_path "$SETTINGS_FILE")"
 
 DRY_RUN=false
 VERIFY=false
@@ -243,9 +264,10 @@ else
   if command -v claude &> /dev/null && [ -f "$REPO_DIR/config/plugins/plugins.json" ]; then
     echo ""
     echo "Installing plugins..."
+    PLUGINS_JSON_NATIVE="$(to_native_path "$REPO_DIR/config/plugins/plugins.json")" \
     python3 -c "
-import json
-with open('$REPO_DIR/config/plugins/plugins.json') as f:
+import json, os
+with open(os.environ['PLUGINS_JSON_NATIVE']) as f:
     plugins = json.load(f)['plugins']
 for p in plugins:
     print(p)
@@ -266,12 +288,13 @@ fi
 HOOKS_TEMPLATE="$REPO_DIR/config/hooks.json"
 
 if [ -f "$HOOKS_TEMPLATE" ]; then
+  HOOKS_TEMPLATE_NATIVE="$(to_native_path "$HOOKS_TEMPLATE")"
   if $DRY_RUN; then
     echo ""
-    if python3 -c "
-import json, sys
+    if SETTINGS_FILE_NATIVE="$SETTINGS_FILE_NATIVE" python3 -c "
+import json, os, sys
 try:
-    with open('$SETTINGS_FILE') as f:
+    with open(os.environ['SETTINGS_FILE_NATIVE']) as f:
         s = json.load(f)
     sys.exit(0 if 'hooks' in s else 1)
 except Exception:
@@ -280,12 +303,12 @@ except Exception:
       echo "[DRY RUN] Skip: hooks already configured in settings.json"
     else
       echo "[DRY RUN] Would merge hooks from config/hooks.json into $SETTINGS_FILE"
-      echo "[DRY RUN] REPO_DIR placeholder would be replaced with: $REPO_DIR"
-      python3 -c "
-import json
-with open('$HOOKS_TEMPLATE') as f:
+      echo "[DRY RUN] REPO_DIR placeholder would be replaced with: $REPO_DIR_NATIVE"
+      HOOKS_TEMPLATE_NATIVE="$HOOKS_TEMPLATE_NATIVE" REPO_DIR_NATIVE="$REPO_DIR_NATIVE" python3 -c "
+import json, os
+with open(os.environ['HOOKS_TEMPLATE_NATIVE']) as f:
     raw = f.read()
-rendered = raw.replace('REPO_DIR', '$REPO_DIR')
+rendered = raw.replace('REPO_DIR', os.environ['REPO_DIR_NATIVE'].replace('\\\\', '/'))
 hooks = json.loads(rendered)
 for event, matchers in hooks['hooks'].items():
     for entry in matchers:
@@ -294,8 +317,8 @@ for event, matchers in hooks['hooks'].items():
 " 2>/dev/null || echo "[DRY RUN]   (could not parse hooks template)"
     fi
   else
-    export REPO_DIR_PY="$REPO_DIR"
-    export SETTINGS_FILE_PY="$SETTINGS_FILE"
+    export REPO_DIR_PY="$REPO_DIR_NATIVE"
+    export SETTINGS_FILE_PY="$SETTINGS_FILE_NATIVE"
     python3 - <<'PYEOF'
 import json, sys, os
 
@@ -306,7 +329,9 @@ hooks_path    = os.path.join(repo_dir, 'config', 'hooks.json')
 with open(hooks_path) as f:
     raw = f.read()
 
-rendered = raw.replace('REPO_DIR', repo_dir)
+# Normalize to forward slashes so the substituted path is a valid JSON string
+# on Windows (backslashes would need escaping and would break json.loads).
+rendered = raw.replace('REPO_DIR', repo_dir.replace('\\', '/'))
 hooks_config = json.loads(rendered)
 
 try:
