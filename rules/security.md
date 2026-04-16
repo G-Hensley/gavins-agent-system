@@ -23,7 +23,7 @@ These rules apply to ALL code, regardless of language or framework.
 - Use short-lived tokens with refresh rotation
 
 ## Dependencies
-- Run `npm audit` / `pip audit` when adding or updating dependencies
+- Run `pnpm audit` / `uv pip audit` when adding or updating dependencies
 - Pin dependency versions to prevent supply chain attacks
 - Review changelogs before major version bumps
 

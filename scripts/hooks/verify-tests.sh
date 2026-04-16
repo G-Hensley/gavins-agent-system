@@ -15,7 +15,7 @@ if [[ -z "$COMMAND" ]]; then
 fi
 
 # Only act on test commands
-if ! printf '%s' "$COMMAND" | grep -qE '\b(pytest|vitest|npm\s+test|npm\s+run\s+test|yarn\s+test|jest)\b'; then
+if ! printf '%s' "$COMMAND" | grep -qE '\b(pytest|vitest|pnpm\s+test|pnpm\s+run\s+test|jest)\b'; then
   exit 0
 fi
 

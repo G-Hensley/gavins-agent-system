@@ -75,7 +75,10 @@ Save to project docs (e.g., `docs/plans/YYYY-MM-DD-<feature-name>.md`). Include 
 - Dispatch plan-reviewer subagent (`plan-reviewer` subagent)
 - Fix issues, re-dispatch (max 3 iterations, then surface to user)
 
-### 5. Hand Off for Execution
+### 5. Scaffold Project Context
+Before execution, invoke `project-scaffolding` skill to ensure CLAUDE.md and CONTEXT.md exist and reflect this plan. This is critical — implementation agents and future sessions depend on these files for context.
+
+### 6. Hand Off for Execution
 Offer the user a choice:
 - **Subagent-driven** (recommended for larger plans) — fresh subagent per task with review between tasks. Use `subagent-driven-development` skill.
 - **Inline execution** (for smaller plans) — execute tasks sequentially in current session. Use `executing-plans` skill.

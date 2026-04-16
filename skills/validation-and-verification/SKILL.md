@@ -47,6 +47,19 @@ Before any success claim:
 - Do not skip verification because you're confident or tired
 - Do not claim success with different words to avoid the rule — spirit over letter
 
+## Post-Task Reflection
+
+After verification passes and before moving on, run a quick system health check:
+
+1. **Skill coverage**: Did you use a skill for this task? If you worked without one, should a skill exist for this domain?
+2. **Reference quality**: Did any reference file lack information you needed? Did you have to research something a reference should have covered?
+3. **Agent fit**: If you dispatched an agent, did it have the right skills loaded? Was it missing domain knowledge?
+4. **New pattern**: Did you solve something in a reusable way that no skill documents?
+
+If any answer reveals a gap → write a suggestion to `improvements/skills/` or `improvements/agents/` immediately. Don't defer — the context is freshest right now.
+
+This is not optional busywork. The improvements backlog is how the system gets smarter. One suggestion per task max — pick the most impactful gap.
+
 ## When to Apply
 
 Before ANY of these:

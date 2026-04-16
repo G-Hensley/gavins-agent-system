@@ -4,7 +4,7 @@ A portable, version-controlled configuration of Claude Code skills, agents, comm
 
 ## What This Is
 
-This repository packages Gavin Hensley's complete Claude Code environment — 27 reusable skills, 24 specialist agents, slash commands, persistent agent memory, and global Claude instructions. Everything is designed for API security, CLI tooling, backend/frontend development, and multi-agent automation.
+This repository packages Gavin Hensley's complete Claude Code environment — 34 reusable skills, 24 specialist agents, 10 path-scoped rules, 5 enforcement hooks, slash commands, persistent agent memory, and global Claude instructions. Everything is designed for API security, CLI tooling, backend/frontend development, and multi-agent automation.
 
 Instead of scattering configuration across machines, this system is:
 - **Version-controlled** — Every skill, agent, and setting is in git. Review changes, rollback mistakes, share improvements.
@@ -15,22 +15,30 @@ Instead of scattering configuration across machines, this system is:
 ## Repository Structure
 
 ```
-skills/              # 27 reusable skills (each with SKILL.md + references/)
+skills/              # 34 reusable skills (each with SKILL.md + references/)
 agents/              # 24 specialist agents (prompts + configuration)
 commands/            # 5 slash commands (/improve, /plan, /review, /setup, /status)
+rules/               # 10 path-scoped rules (glob-activated domain instructions)
 agent-memory/        # Persistent learnings per agent (loaded per session)
 improvements/        # Backlog for skill/agent enhancements
 plans/               # Saved execution plans
-config/              # Settings, plugin list, and other configuration
+config/              # Settings, plugin list, hooks template
   plugins/           #   plugins.json (20+ tracked plugins)
+  hooks.json         #   Hook definitions (merged into settings.json on install)
   settings.json      #   Template permissions and configuration
   settings.local.json #  Local overrides
 scripts/             # Tooling and automation
   install.sh         #   Deploy script — symlinks everything to ~/.claude/
-  validate.sh        #   Validates repo structure and cross-references
+  validate.sh        #   Validates repo structure (288 checks)
+  hooks/             #   5 enforcement hooks (lint, destructive cmd block, doc drift, etc.)
+templates/           # Reusable project templates
+  github-actions/    #   CI and Claude review workflow templates
 docs/                # Project documentation and roadmaps
   IMPROVEMENTS.md    #   Consolidated improvement plan
+  STATUS.md          #   Current status tracker with eval results
+evals/               # 17-eval test suite across 4 tiers + 6 review challenges
 CLAUDE.md            # Global instructions for Claude Code sessions
+CONTEXT.md           # Ambient context (pipeline, parallelism, architecture)
 README.md            # This file
 .gitignore           # Excludes credentials, caches, ephemeral state
 ```
@@ -64,7 +72,7 @@ Backups are created as `.bak` files if existing files are replaced.
 After install, your Claude Code sessions will load these skills and agents automatically. Check:
 
 ```bash
-ls -la ~/.claude/skills      # Should see 27 skill directories
+ls -la ~/.claude/skills      # Should see 34 skill directories
 ls -la ~/.claude/agents      # Should see 24 agent definitions
 claude skill list            # See available skills
 ```
@@ -164,9 +172,9 @@ The `settings.json` file contains safe defaults:
   "permissions": {
     "allow": [
       "Bash(git ...)",
-      "Bash(npm ...)",
-      "Bash(pip ...)",
-      "Bash(python -m pytest ...)"
+      "Bash(pnpm ...)",
+      "Bash(uv ...)",
+      "Bash(gh ...)"
     ],
     "additionalDirectories": []
   }

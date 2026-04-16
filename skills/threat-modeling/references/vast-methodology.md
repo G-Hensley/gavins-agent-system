@@ -1,4 +1,6 @@
-# VAST Methodology
+# VAST Methodology & STRIDE Threat Modeling
+
+Source: Microsoft STRIDE model, OWASP Threat Modeling, VAST methodology
 
 VAST (Visual, Agile, and Simple Threat) modeling is designed for modern DevOps — automated, integrated, and scalable.
 
@@ -107,6 +109,42 @@ Status: [Open/In Progress/Mitigated/Accepted]
 - Next review: [date]
 - Trigger events: major architecture changes, new external integrations, security incidents
 ```
+
+## STRIDE Deep Dive by Component
+
+Source: Microsoft Threat Modeling Tool (learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats)
+
+**API endpoints**: Spoofing (forged JWTs, stolen API keys), Tampering (parameter manipulation, request body injection), Information Disclosure (verbose errors, excessive data in responses), DoS (missing rate limits, expensive queries), EoP (BOLA, broken function-level auth)
+
+**Databases**: Tampering (SQL injection, mass assignment), Information Disclosure (unencrypted backups, excessive SELECT), Repudiation (no audit logging on writes), EoP (app running as DB admin)
+
+**Authentication services**: Spoofing (credential stuffing, session hijacking), Tampering (token manipulation, algorithm confusion in JWT), Repudiation (no login audit trail), Information Disclosure (user enumeration via error messages)
+
+**External integrations**: Spoofing (compromised third-party API), Tampering (MITM on unencrypted connections), Information Disclosure (over-sharing data with third parties), DoS (third-party outage cascading to your system)
+
+**File uploads**: Tampering (malicious file content), Information Disclosure (metadata leakage), DoS (oversized uploads consuming storage), EoP (path traversal, unrestricted file types enabling RCE)
+
+**Message queues/event streams**: Spoofing (unauthorized message producers), Tampering (message modification in transit), Repudiation (untracked message processing), DoS (queue flooding)
+
+## Common Threat Patterns by Architecture
+
+**Serverless (Lambda + API Gateway + DynamoDB)**:
+- Overpermissive Lambda roles → least-privilege per function
+- Event injection (untrusted event data) → validate all event input
+- Cold start timing attacks → not usually critical but document
+- Function-level DoS → reserved concurrency, API Gateway throttling
+
+**SPA + REST API**:
+- XSS → CSP, output encoding, DOMPurify
+- CSRF → SameSite cookies, anti-CSRF tokens
+- Token storage → HttpOnly cookies, not localStorage
+- API enumeration → rate limiting, authentication required for all endpoints
+
+**Microservices**:
+- Service-to-service auth → mTLS or signed JWTs, not shared secrets
+- Network segmentation → private subnets, security groups per service
+- Cascading failures → circuit breakers, timeouts, bulkheads
+- Data consistency → eventual consistency threats, duplicate processing
 
 ## Continuous Integration
 

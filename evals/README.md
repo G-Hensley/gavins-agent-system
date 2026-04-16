@@ -1,6 +1,6 @@
 # Agent System Eval Suite
 
-Graded prompts and seeded review challenges that exercise the 24 specialist agents and 27 skills in Gavin's Agent System.
+Graded prompts and seeded review challenges that exercise the 24 specialist agents and 28 skills in Gavin's Agent System.
 
 ## Why It Exists
 

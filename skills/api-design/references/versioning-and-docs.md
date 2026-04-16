@@ -86,6 +86,6 @@ const UserSchema = z.object({
 Serve docs at `/docs` or `/api-docs` — always accessible in non-prod environments.
 
 ## CI Validation
-- `npx @stoplight/spectral-cli lint openapi.yaml` — enforce style and consistency on every PR
-- `npx openapi-diff old-spec.yaml new-spec.yaml` — detect breaking changes before merge
+- `pnpm exec spectral lint openapi.yaml` — enforce style and consistency on every PR
+- `pnpm exec openapi-diff old-spec.yaml new-spec.yaml` — detect breaking changes before merge
 - Block merges that introduce undocumented breaking changes

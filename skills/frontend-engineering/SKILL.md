@@ -31,8 +31,20 @@ Read the relevant reference for the framework and concern. Follow TDD — write 
 ### 4. Review
 Dispatch the `frontend-engineer` subagent for implementation.
 
+## Package Management
+
+**pnpm only. Never npm or yarn.** This applies to all frontend work:
+- `pnpm create next-app@latest` — not `npx create-next-app`
+- `pnpm add <package>` — not `npm install`
+- `pnpm exec <tool>` — not `npx <tool>`
+- `pnpm run dev` / `pnpm run build` / `pnpm test` — not `npm run`
+- CI: `pnpm install --frozen-lockfile` — not `npm ci`
+
+If a tutorial, docs page, or AI suggestion uses `npm` or `npx`, translate to `pnpm` before running.
+
 ## What NOT to Do
 
+- Do not use npm or yarn — pnpm only, no exceptions
 - Do not override design system decisions (colors, spacing, typography) — those come from `frontend-design`
 - Do not put business logic in components — extract to hooks or service modules
 - Do not use `useEffect` for data that can be fetched server-side (Next.js)

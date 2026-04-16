@@ -32,6 +32,27 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "REPO_DIR/scripts/hooks/lint-on-save.sh",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git commit *)",
+            "command": "REPO_DIR/scripts/hooks/doc-drift-check.sh",
+            "timeout": 5
+          }
+        ]
       }
     ]
   }

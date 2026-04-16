@@ -531,7 +531,7 @@ Several skill frontmatter fields are available but not used in the current syste
 
 ### Actions
 
-- [ ] Audit all 27 skills for applicable frontmatter additions
+- [ ] Audit all 28 skills for applicable frontmatter additions
 - [ ] Prioritize: `context: fork` on review skills, `paths:` on domain skills, `allowed-tools:` on read-only skills
 - [ ] Test that frontmatter changes don't break existing agent dispatch
 - [ ] Add frontmatter validation to `validate.sh`

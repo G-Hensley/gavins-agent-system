@@ -42,6 +42,8 @@ Based on what was brainstormed:
 - **Feature or technical component** → invoke `architecture` skill to create technical design
 - **Small/contained change** → invoke `writing-plans` skill directly if no design is needed
 
+**Before any implementation begins**: invoke `project-scaffolding` skill to ensure the project has a CLAUDE.md and CONTEXT.md that capture the decisions made here. This is especially critical for new projects — don't skip it.
+
 ## What NOT to Do
 
 - Do not write specs, PRDs, or design docs — that's the job of downstream skills

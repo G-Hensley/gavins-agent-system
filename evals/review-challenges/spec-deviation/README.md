@@ -40,7 +40,7 @@ A Task Manager API specification (`spec.md`) and its Express.js implementation (
 
 ```bash
 cd evals/review-challenges/spec-deviation
-npm install
+pnpm install
 node src/routes.js
 ```
 

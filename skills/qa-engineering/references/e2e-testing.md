@@ -61,7 +61,7 @@ test.describe('User Authentication', () => {
 ## CI Integration
 ```yaml
 - name: E2E Tests
-  run: npx playwright test
+  run: pnpm exec playwright test
   env:
     BASE_URL: http://localhost:3000
 ```

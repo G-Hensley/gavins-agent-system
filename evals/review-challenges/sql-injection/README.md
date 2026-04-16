@@ -39,7 +39,7 @@ A small Express.js + better-sqlite3 app (`app.js`) with four endpoints managing 
 
 ```bash
 cd evals/review-challenges/sql-injection
-npm install
+pnpm install
 node app.js
 ```
 

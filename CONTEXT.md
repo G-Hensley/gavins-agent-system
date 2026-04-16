@@ -4,7 +4,7 @@ Ambient context loaded alongside CLAUDE.md. This is what a new team member needs
 
 ## What This Repository Is
 
-This is the complete Claude Code environment for Gavin Hensley — 29 reusable skills, 24 specialist agents, 5 slash commands, and persistent agent memory. It packages an entire AI assistant "brain" as portable, version-controlled infrastructure.
+This is the complete Claude Code environment for Gavin Hensley — 34 reusable skills, 24 specialist agents, 10 path-scoped rules, 5 enforcement hooks, 5 slash commands, and persistent agent memory. It packages an entire AI assistant "brain" as portable, version-controlled infrastructure.
 
 The system separates cleanly:
 - **This repo** — Skills, agents, commands, configuration (your AI assistant's rules and knowledge)
@@ -33,11 +33,12 @@ brainstorming
     → architect (design)
       → threat-modeler (security analysis)
         → writing-plans (execution plan)
-          → implementer(s) (code)
-            → spec-reviewer (contract check)
-              → code-quality-reviewer (style/complexity)
-                → security-reviewer(s) (backend/frontend/cloud)
-                  → doc-writer (README, API docs)
+          → project-scaffolding (CLAUDE.md + CONTEXT.md for the project)
+            → implementer(s) (code)
+              → spec-reviewer (contract check)
+                → code-quality-reviewer (style/complexity)
+                  → security-reviewer(s) (backend/frontend/cloud)
+                    → doc-writer (README, API docs)
 ```
 
 Each arrow is a handoff. The receiving agent loads its memory and receives the artifact from the previous agent.
@@ -117,7 +118,7 @@ When dispatching, check if a skill covers it before creating a new agent session
 ## Directory Layout
 
 ```
-skills/              # 29 domains (each: SKILL.md + references/)
+skills/              # 28 domains (each: SKILL.md + references/)
 agents/              # 24 specialist agents (Markdown prompt format)
 commands/            # 5 slash commands (/improve, /plan, /review, /setup, /status)
 agent-memory/        # Persistent learnings per agent
