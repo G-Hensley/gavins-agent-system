@@ -17,6 +17,21 @@ Full-stack engineer at APIsec (API security platform). Python, TypeScript, Java.
 
 When you add, remove, or rename an agent, skill, command, or any structural element of this system, check that all docs referencing counts or lists are still accurate. Key files to verify: `README.md`, `CLAUDE.md`, `CONTEXT.md`, `docs/STATUS.md`, `evals/agent-coverage.md`. Don't hardcode counts when you can avoid it — but when docs do state a number (e.g., "24 agents"), update it wherever it appears.
 
+## Git Workflow
+
+- Always commit and push changes after completing PR review fixes without waiting to be asked
+- Verify the active GitHub account before pushing (`gh auth status` — use `G-Hensley`, not `Gavin-Hensley`)
+- Never include SQL keywords like `DROP TABLE` in PR/commit bodies (triggers security hooks)
+
+## Quality Gates
+
+- Run `ruff check` as part of the TDD green gate for Python projects, not just tests
+- Verify dev server starts cleanly before declaring frontend work complete
+
+## Planning
+
+- When the user asks to plan or brainstorm, do NOT launch autonomous Task/Agent exploration first — ask clarifying questions or proceed directly
+
 ## Code Standards
 
 - **File size:** SKILL.md and agent files under 200 lines. Reference files under 200 lines. Production code files — if it's getting long, it's doing too much.
