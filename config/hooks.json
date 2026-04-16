@@ -42,6 +42,17 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git commit *)",
+            "command": "REPO_DIR/scripts/hooks/doc-drift-check.sh",
+            "timeout": 5
+          }
+        ]
       }
     ]
   }
