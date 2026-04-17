@@ -4,11 +4,13 @@ Seeded-defect evaluation for the `appsec-reviewer` agent.
 
 ## What This Is
 
-A dual-stack API service (Node.js + Python) for document processing. The Node.js layer handles HTTP routing, authentication, and request validation. The Python component handles document parsing, template rendering, and config management. Both `package.json` and `requirements.txt` contain intentionally pinned vulnerable dependency versions mixed with safe current versions as false-positive controls.
+A dual-stack API service (Node.js + Python) for document processing. The Node.js layer handles HTTP routing, authentication, and request validation. The Python component handles document parsing, template rendering, and config management. Both `package.json.fixture` and `requirements.txt.fixture` contain intentionally pinned vulnerable dependency versions mixed with safe current versions as false-positive controls.
+
+> **Why the `.fixture` suffix?** The manifests are renamed from the standard `package.json` / `requirements.txt` so GitHub Dependabot does not pick them up as live dependencies. They are content-identical to the standard formats — only the filename differs. The reviewer agent should still be able to read and analyze them.
 
 ## What the Reviewer Should Find
 
-### Node.js (`package.json`)
+### Node.js (`package.json.fixture`)
 
 | Dependency | Version | Vulnerability | Difficulty | Expected Severity |
 |---|---|---|---|---|
@@ -21,7 +23,7 @@ A dual-stack API service (Node.js + Python) for document processing. The Node.js
 | `winston` | 3.11.0 | Safe control | N/A | None |
 | `uuid` | 9.0.1 | Safe control | N/A | None |
 
-### Python (`requirements.txt`)
+### Python (`requirements.txt.fixture`)
 
 | Dependency | Version | Vulnerability | Difficulty | Expected Severity |
 |---|---|---|---|---|
