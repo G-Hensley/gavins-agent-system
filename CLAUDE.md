@@ -13,10 +13,6 @@ Full-stack engineer at APIsec (API security platform). Python, TypeScript, Java.
 - **YAGNI.** Build for what's needed now. No speculative abstractions, configurability, or "future-proofing."
 - **Verify before claiming.** Run the command that proves it works. "Should work" is not evidence.
 
-## Documentation Sync
-
-When you add, remove, or rename an agent, skill, command, or any structural element of this system, check that all docs referencing counts or lists are still accurate. Key files to verify: `README.md`, `CLAUDE.md`, `CONTEXT.md`, `docs/STATUS.md`, `evals/agent-coverage.md`. Don't hardcode counts when you can avoid it — but when docs do state a number (e.g., "24 agents"), update it wherever it appears.
-
 ## Git Workflow
 
 - Always commit and push changes after completing PR review fixes without waiting to be asked
@@ -88,10 +84,12 @@ Use these agents proactively — don't wait for me to ask:
 
 Actively look for ways to improve the skills and agents system. When you notice a gap, pattern, or opportunity during work, log it:
 
-- **`~/.claude/improvements/skills/`** — suggestions for new skills or enhancements to existing ones
-- **`~/.claude/improvements/agents/`** — suggestions for new agents or enhancements to existing ones
+Log to `~/.claude/improvements/<kind>/` where `<kind>` classifies the suggestion:
+- `skills/` — new skills or enhancements to existing ones
+- `agents/` — new agents or enhancements to existing ones
+- `system/` — cross-cutting improvements (tooling, scripts, rules, docs, evals)
 
-Write a short markdown file per suggestion with: what you observed, why it would help, and a concrete proposal. Name files descriptively (e.g., `add-caching-patterns-to-backend.md`, `new-agent-api-tester.md`).
+Create the subdirectory if it doesn't exist yet. Write a short markdown file per suggestion with: what you observed, why it would help, and a concrete proposal. Name files descriptively (e.g., `add-caching-patterns-to-backend.md`, `new-agent-api-tester.md`).
 
 Examples of what to log:
 - A pattern you had to figure out that no skill covered

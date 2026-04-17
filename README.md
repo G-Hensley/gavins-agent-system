@@ -8,7 +8,7 @@ This repository packages Gavin Hensley's complete Claude Code environment — 34
 
 Instead of scattering configuration across machines, this system is:
 - **Version-controlled** — Every skill, agent, and setting is in git. Review changes, rollback mistakes, share improvements.
-- **Portable** — Run `./install.sh` on any machine with the claude CLI installed. Symlinks everything into `~/.claude/`.
+- **Portable** — Run `./scripts/install.sh` on any machine with the claude CLI installed. Symlinks everything into `~/.claude/`.
 - **Extensible** — Add new skills and agents. Log suggestions in `improvements/` to improve the system over time.
 - **Separate from code** — Your actual project work lives elsewhere. This is your AI assistant's "brain."
 
@@ -21,7 +21,7 @@ commands/            # 5 slash commands (/improve, /plan, /review, /setup, /stat
 rules/               # 10 path-scoped rules (glob-activated domain instructions)
 agent-memory/        # Persistent learnings per agent (loaded per session)
 improvements/        # Backlog for skill/agent enhancements
-plans/               # Saved execution plans
+coaching/            # Dated Claude-authored coaching notes on the system (not synced)
 config/              # Settings, plugin list, hooks template
   plugins/           #   plugins.json (20+ tracked plugins)
   hooks.json         #   Hook definitions (merged into settings.json on install)
@@ -60,7 +60,7 @@ cd Gavins-Agent-System
 
 The script will:
 1. Create `~/.claude/` if it doesn't exist
-2. Symlink `skills/`, `agents/`, `commands/`, `improvements/`, `agent-memory/`, `plans/` to `~/.claude/`
+2. Symlink `skills/`, `agents/`, `commands/`, `rules/`, `improvements/`, `agent-memory/` to `~/.claude/`
 3. Symlink `CLAUDE.md` and `settings.local.json`
 4. Copy `settings.json` as a template (so you can customize machine-specific permissions)
 5. Install plugins listed in `plugins/plugins.json` (if claude CLI is available)
@@ -205,7 +205,7 @@ Install new plugins with `claude plugin install <name>` and add them to this fil
 2. Write `SKILL.md` (describe what the skill does, when to use it, process steps)
 3. Create `references/` subdirectory with reference files (e.g., `python-patterns.md`)
 4. Commit and push
-5. Next `./install.sh` will symlink it to `~/.claude/skills/`
+5. Next `./scripts/install.sh` will symlink it to `~/.claude/skills/`
 
 Example structure:
 ```
@@ -222,7 +222,7 @@ skills/my-skill/
 2. Define the agent configuration (model, system prompt, tools, skills)
 3. Create `agent-memory/agent-name/` for persistent learnings
 4. Commit and push
-5. Next `./install.sh` will symlink it
+5. Next `./scripts/install.sh` will symlink it
 
 Example:
 ```
@@ -311,9 +311,9 @@ agent-memory/
 
 Format: Markdown with sections like "Preferences", "Common Pitfalls", "Stack Notes".
 
-### plans/
+### coaching/
 
-Saved execution plans for complex workflows. Created by the `execution-plans` skill.
+Dated markdown notes written by Claude (e.g. `2026-04-16.md`) critiquing the state of the agent system. Git-tracked for history. Not symlinked into `~/.claude/` — these are meta-analysis, not runtime config.
 
 ### improvements/
 

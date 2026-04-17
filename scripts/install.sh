@@ -79,7 +79,7 @@ done
 # ---------------------------------------------------------------------------
 # Portable directories to sync
 # ---------------------------------------------------------------------------
-DIRS=(skills agents commands improvements agent-memory plans rules)
+DIRS=(skills agents commands improvements agent-memory rules)
 
 # ---------------------------------------------------------------------------
 # --verify mode
@@ -150,6 +150,27 @@ if $VERIFY; then
     echo "One or more symlinks are broken or missing." >&2
     exit 1
   fi
+fi
+
+# ---------------------------------------------------------------------------
+# Preflight: can we actually create symlinks on this host?
+# On Windows without Developer Mode or admin, `ln -s` fails silently and the
+# install leaves ~/.claude/ in a half-broken state (backups made, no new links).
+# ---------------------------------------------------------------------------
+if ! $DRY_RUN; then
+  preflight_tmp_target="$(mktemp -u 2>/dev/null || echo "/tmp/preflight-$$")"
+  preflight_tmp_link="${preflight_tmp_target}.lnk"
+  if ! ln -s "$preflight_tmp_target" "$preflight_tmp_link" 2>/dev/null; then
+    echo "" >&2
+    echo "ERROR: Cannot create symlinks on this host." >&2
+    echo "  On Windows: enable Developer Mode" >&2
+    echo "    Settings -> For developers -> Developer Mode -> On" >&2
+    echo "  OR re-run this script from an Administrator Git Bash shell." >&2
+    echo "" >&2
+    echo "Aborting before any files are modified." >&2
+    exit 1
+  fi
+  rm -f "$preflight_tmp_link" 2>/dev/null
 fi
 
 # ---------------------------------------------------------------------------
