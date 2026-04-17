@@ -53,3 +53,8 @@ evals/**/output/
 
 # Local settings override
 .claude/
+
+# Agent memory — machine-local; may contain proprietary or per-project context.
+# Keep the directory + README in the repo so install.sh has a symlink target.
+agent-memory/*
+!agent-memory/README.md
