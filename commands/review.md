@@ -1,4 +1,12 @@
-Run a security review on the current changes. Determine which files have been modified using `git diff --name-only HEAD~1` (or unstaged changes if nothing is committed).
+Run a security review on the current changes. Determine which files have been modified using:
+
+```
+git diff --name-only HEAD~1 2>/dev/null \
+  || git diff --name-only --cached \
+  || git diff --name-only
+```
+
+This covers committed changes on an established branch, staged-but-uncommitted changes, and unstaged edits on a fresh branch with no commits.
 
 Based on the files changed, dispatch the RIGHT security specialist agents:
 

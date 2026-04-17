@@ -2,7 +2,7 @@
 
 Current status of improvements from [IMPROVEMENTS.md](./IMPROVEMENTS.md) and eval runs.
 
-Last updated: 2026-04-10
+Last updated: 2026-04-16
 
 ---
 
@@ -120,6 +120,7 @@ Last updated: 2026-04-10
 | 26 | Google Cloud references | Done | gcp-infrastructure.md + gcp-security.md |
 | 27 | API versioning + auto-docs | Done | versioning-and-docs.md in api-design |
 | 28 | GitHub Actions CI/CD template | Done | templates/github-actions/ci.yml + claude-review.yml |
+| 29 | Doc-sync skill + drift hook | Done | skills/doc-sync/, documentation.md rule, drift hook on structural changes |
 
 ## What's Left
 

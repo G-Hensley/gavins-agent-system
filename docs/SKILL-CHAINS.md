@@ -22,6 +22,7 @@ Skills can be dispatched individually or composed into named chains for complex 
 8. **refactoring** (if needed) — Clean up code structure before merge
 9. **validation-and-verification** — Confirm all tests pass, requirements met, code works
 10. **doc-writing** — Update README, API docs, architecture docs as needed
+11. **doc-sync** (optional) — Run after any structural change (new/renamed/removed agent, skill, command, or rule) to keep `README.md`, `CLAUDE.md`, `CONTEXT.md`, `docs/STATUS.md`, and `evals/agent-coverage.md` consistent
 
 **Parallelism:**
 - **brainstorming → product-management → architecture** — Must be sequential
