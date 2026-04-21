@@ -47,14 +47,19 @@ try:
 except Exception:
     sys.exit(1)
 " 2>/dev/null)
-      if [ -n "$DAYS_OLD" ] && [ "$DAYS_OLD" -gt 14 ]; then
-        echo ""
-        echo "STATUS.md drift warning: structural change committed but docs/STATUS.md is $DAYS_OLD days old (Last updated: $STATUS_DATE)."
-        echo "Structural paths in this commit:"
-        echo "$STRUCTURAL_HIT" | sed 's/^/  /'
-        echo ""
-        echo "Fix: bump 'Last updated:' and add an Improvements Roadmap row. Run /doc-sync for full drift check."
-      fi
+      case "$DAYS_OLD" in
+        ''|*[!0-9]*) ;;
+        *)
+          if [ "$DAYS_OLD" -gt 14 ]; then
+            echo ""
+            echo "STATUS.md drift warning: structural change committed but docs/STATUS.md is $DAYS_OLD days old (Last updated: $STATUS_DATE)."
+            echo "Structural paths in this commit:"
+            echo "$STRUCTURAL_HIT" | sed 's/^/  /'
+            echo ""
+            echo "Fix: bump 'Last updated:' and add an Improvements Roadmap row. Run /doc-sync for full drift check."
+          fi
+          ;;
+      esac
     fi
   fi
 fi

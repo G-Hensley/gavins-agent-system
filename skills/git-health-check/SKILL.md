@@ -6,7 +6,7 @@ last_verified: 2026-04-20
 
 # Git Health Check
 
-Proactively check for and repair the git-level corruption patterns observed in `gavins-agent-system` on 2026-04-17 (`.corrupt.backup` artifacts from crashed writers) and 2026-04-18 (truncated HEAD).
+Proactively check for and repair the git-level corruption patterns observed in `gavins-agent-system` on 2026-04-17 (`.corrupt.backup` artifacts from crashed writers) and 2026-04-19 (truncated HEAD — see `coaching/2026-04-20.md`).
 
 **Announce at start:** "Running git-health-check on this repo."
 
@@ -21,7 +21,7 @@ Read `.git/HEAD`. It must match one of:
 
 Failure modes to detect:
 
-- **Trailing-slash truncation**: matches `^ref: refs/heads/.*/$` (the observed 2026-04-18 bug).
+- **Trailing-slash truncation**: matches `^ref: refs/heads/.*/$` (the observed 2026-04-19 bug).
 - **Missing newline**: content does not end with `\n`.
 - **Ref target missing**: `ref: refs/heads/<name>` points to a file that doesn't exist under `.git/refs/heads/<name>` AND the ref doesn't appear in `.git/packed-refs`.
 - **Detached-but-invalid**: HEAD is a 40-char hex sha that `git cat-file -e` can't resolve.
