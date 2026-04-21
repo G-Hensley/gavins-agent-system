@@ -29,7 +29,7 @@ Single batch. All read-only, no side effects.
 - Review-level summary comments: `gh api repos/{owner}/{repo}/pulls/{pr}/reviews` — top-level "Copilot reviewed N of M files" summaries that inline comments miss.
 - Check runs: `gh pr checks {pr} --json name,state,conclusion,link`.
 - Mergeable state: `gh pr view {pr} --json mergeable,mergeStateStatus`.
-- Dependabot alerts touching PR files: `gh api repos/{owner}/{repo}/dependabot/alerts` filtered to PR's changed manifests.
+- Dependabot alerts touching PR files (**best-effort**): try `gh api repos/{owner}/{repo}/dependabot/alerts` filtered to PR's changed manifests. If the call returns 403/404 (alerts disabled on the repo, or token lacks `security_events` scope), record Dependabot status as "unavailable" in the final report and continue — do not fail the check.
 
 ### 3. Triage comments
 
@@ -73,7 +73,9 @@ If the API call fails (account doesn't have Copilot PR review, API shape changed
 
 ### 7. Report
 
-Single summary block. Columns: comment id | path:line | disposition | action taken.
+Single summary block covering inline review comments AND review-level summary items in the same table. Columns: comment id | path:line | disposition | action taken.
+
+For inline comments, use the normal `path:line` value. For review-level summary items (from `/pulls/{pr}/reviews` — they have no file/line), use `review:<id>` in the `path:line` column where `<id>` is the GitHub review id.
 
 End with:
 
