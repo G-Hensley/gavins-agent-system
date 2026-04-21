@@ -6,6 +6,8 @@ last_verified: 2026-04-20
 
 # Status Doc Keeper
 
+> **Historical starter proposal from the 2026-04-20 coach report.** This skill did **not** ship as a standalone hook. The intent was rolled into [`scripts/hooks/doc-drift-check.sh`](../../scripts/hooks/doc-drift-check.sh) as a second check, which uses the correct `scripts/hooks/` path in its structural-path matcher (the draft below uses a non-existent top-level `hooks/`). Preserved here as the record of what the coach proposed, not as a template to copy.
+
 The doc-sync skill was meant to catch STATUS.md drift. It's listed as "optional step 11" in `docs/SKILL-CHAINS.md` and fired zero times between 2026-04-16 and 2026-04-20 while 12 structural-change commits landed. This skill converts doc-sync's intent into a non-optional commit-time gate.
 
 **Fail-open by design** — this never blocks a commit. It warns loudly so the next session sees the drift.

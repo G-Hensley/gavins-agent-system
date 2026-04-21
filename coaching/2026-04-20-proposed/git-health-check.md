@@ -6,6 +6,8 @@ last_verified: 2026-04-20
 
 # Git Health Check
 
+> **Historical starter proposal from the 2026-04-20 coach report.** See the shipped version at [`skills/git-health-check/SKILL.md`](../../skills/git-health-check/SKILL.md) for the production pattern — it fixes the known bugs in this draft (`-maxdepth 2` misses deep lock files; the `**` glob for dependabot branches requires `shopt -s globstar`) and adds an explicit `--fix` scope section. Preserved here as the record of what the coach proposed, not as a template to copy.
+
 Proactively check for and repair the git-level corruption patterns that have surfaced in `gavins-agent-system` (2026-04-17 `.corrupt.backup` incident, 2026-04-19 truncated HEAD).
 
 **Announce at start:** "Running git-health-check on this repo."
