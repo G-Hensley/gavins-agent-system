@@ -1,0 +1,22 @@
+# Dependabot configuration for gavins-agent-system.
+#
+# This repo intentionally contains NO live application dependencies — every
+# `package.json` and `requirements.txt` under `evals/` is a planted fixture
+# for security-review evals. To keep Dependabot from filing vulnerability
+# PRs against those fixtures, all eval manifests are renamed with a
+# `.fixture` suffix (e.g., `package.json.fixture`) so Dependabot's manifest
+# detection skips them.
+#
+# The `github-actions` entry below is a minimal valid config placeholder:
+# this repo currently has no `.github/workflows/`, so Dependabot finds
+# nothing to scan. If workflows are ever added, action versions will be
+# kept fresh automatically. If real `package.json` / `pyproject.toml`
+# surfaces ever ship in this repo, add per-ecosystem entries here scoped
+# to the exact directory — do not scope to `/` while eval fixtures live
+# under `evals/review-challenges/`.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
