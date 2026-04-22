@@ -54,8 +54,9 @@ if [ -z "$LINES" ]; then exit 0; fi
 if [ "$LINES" -gt 200 ]; then
   echo ""
   echo "File-size warning: $FILE_PATH is $LINES lines (>200)."
-  echo "Per CLAUDE.md Code Standards, SKILL.md / agent / reference files should stay under 200."
-  echo "If it's production code, consider whether it's doing too much — refactor into smaller units."
+  echo "Per CLAUDE.md Code Standards, keep .md files under skills/, agents/, rules/, and commands/"
+  echo "— plus .py / .ts / .tsx / .rs / .sh production code anywhere — under 200 lines."
+  echo "If this file is doing too much, split the documentation or refactor the code into smaller units."
 fi
 
 exit 0
