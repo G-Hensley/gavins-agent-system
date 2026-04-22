@@ -48,7 +48,23 @@ if [ -z "$PUSH_REMOTE" ]; then
   [ -z "$PUSH_REMOTE" ] && PUSH_REMOTE="origin"
 fi
 
-REMOTE_URL=$(git remote get-url "$PUSH_REMOTE" 2>/dev/null || echo "")
+# Resolve the URL we'll actually push to. Handle three cases:
+#   1. PUSH_REMOTE is a literal URL (`git push https://... main`) — use as-is.
+#   2. PUSH_REMOTE is a registered remote with a pushurl override — prefer
+#      `git remote get-url --push` so we see the actual push destination.
+#   3. PUSH_REMOTE is a registered remote with no pushurl — fall back to
+#      the fetch URL.
+case "$PUSH_REMOTE" in
+  http://*|https://*|git@*|ssh://*|*://*)
+    REMOTE_URL="$PUSH_REMOTE"
+    ;;
+  *)
+    REMOTE_URL=$(git remote get-url --push "$PUSH_REMOTE" 2>/dev/null \
+                 || git remote get-url "$PUSH_REMOTE" 2>/dev/null \
+                 || echo "")
+    ;;
+esac
+
 if [ -z "$REMOTE_URL" ]; then
   exit 0
 fi
