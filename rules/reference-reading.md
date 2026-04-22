@@ -11,7 +11,12 @@ Before proposing any **design, spec, integration path, or implementation approac
 
 ## What to do
 
-1. **Enumerate candidate docs**: `research/`, `docs/`, `references/`, project-level `CONTEXT.md`, adjacent project's `CLAUDE.md`.
+1. **Enumerate candidate docs.** Sources depend on the project — check whichever of these exist:
+   - `research/` (if present — used by intel-feed, Mothership, and other planning-heavy projects)
+   - `docs/`, `docs/specs/`, `docs/plans/`
+   - `references/` at the repo root **OR** `skills/*/references/` when working inside the agent-system itself (this repo's reference layout)
+   - Project-level `CONTEXT.md`
+   - Adjacent project's `CLAUDE.md` (for cross-project work)
 2. **Read them** — not just filenames. If there are more than 5, read titles + opening paragraphs first, then full-read the ones that match the current problem.
 3. **Cite what you read** in the proposal. Quote the key constraint or decision that shaped your approach.
 4. **If no research / reference exists**, say so explicitly — don't wing it from training data.
