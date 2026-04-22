@@ -22,8 +22,13 @@ if [ -n "$EXIT_CODE" ] && [ "$EXIT_CODE" != "0" ]; then
   exit 0
 fi
 
+# Match directory patterns against the path with a leading `/` prefix so
+# repo-relative paths like "docs/STATUS.md" also match `*/docs/*`. Without
+# this, relative file_path values bypass the include/exclude lists entirely.
+NORMALIZED="/$FILE_PATH"
+
 # Exclude directories explicitly allowed to hold long files
-case "$FILE_PATH" in
+case "$NORMALIZED" in
   */docs/*|*/coaching/*|*/evals/*|*/node_modules/*|*/.venv/*|*/.git/*|*/agent-memory/*)
     exit 0 ;;
 esac
@@ -32,7 +37,7 @@ esac
 CHECK=0
 case "$FILE_PATH" in
   *.md)
-    case "$FILE_PATH" in
+    case "$NORMALIZED" in
       */skills/*|*/agents/*|*/rules/*|*/commands/*) CHECK=1 ;;
     esac
     ;;
