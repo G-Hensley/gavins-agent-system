@@ -35,6 +35,21 @@ Last updated: 2026-04-22
 
 ## Eval Runs
 
+### Freshness Audit (2026-04-26)
+
+Audit-only pass — no mechanical re-runs. See `evals/AUDIT-2026-04-26.md` for the full audit.
+
+| Eval | Audit verdict | Action |
+|---|---|---|
+| Tier 2 / file-watcher | LOW regression risk (agents unchanged) | Pass-by-inspection |
+| Tier 2 / secrets-scanning | LOW regression risk (agents unchanged) | Pass-by-inspection |
+| Tier 2 / tic-tac-toe | LOW regression risk (frontend-design refs grew, agents unchanged) | Pass-by-inspection |
+| Tier 4 / task-manager-app | Rubric STALE — predates orchestration arc (PRs #14–22) | Refresh rubric before next mechanical re-run |
+
+The Tier 4 eval would still mechanically pass against the existing rubric, but the rubric no longer covers per-task PR rhythm, `docs/TASKS.md` maintenance, `project-manager` dispatching, `codex-plan-review` invocation, `pr-check` after-merge handoff, or `project-orchestration` orchestration. Mechanical re-run not justified ($30–100+) until rubric is refreshed.
+
+Estimated cost saved by auditing instead of re-running: $50–150.
+
 ### Review Challenges (2026-04-03)
 
 | Challenge | Target Agent | Planted | Caught | False Pos | Bonus | Grade |
