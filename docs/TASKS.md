@@ -35,7 +35,7 @@ For format, archive policy, and TodoWrite pairing, see the `task-tracking` skill
 <!-- Most recent at the top. When this section exceeds ~30 entries, archive the oldest to docs/TASKS.archive.md. -->
 
 - [x] [TASK-6] `pr-check` skill references `project-orchestration` in its after-merge handoff
-  - closed via #20 (2026-04-26)
+  - closed via #21 (2026-04-26)
   - depends-on: stacked on #19
 
 - [x] [TASK-5] Have `project-scaffolding` call `task-tracking:bootstrap` on new projects
