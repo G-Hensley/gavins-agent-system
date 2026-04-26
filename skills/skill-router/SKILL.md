@@ -20,6 +20,7 @@ Before responding to any task, check which skills apply and invoke them.
 
 For each task, check this routing:
 
+**End-to-end "build me X" / multi-phase project** → `project-orchestration` (master pipeline)
 **Ideation / "I want to build..."** → `brainstorming`
 **Requirements / PRDs / user stories** → `product-management`
 **Technical design / system design** → `architecture`
