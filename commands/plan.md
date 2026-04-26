@@ -1,4 +1,4 @@
-Start the full planning pipeline for a new feature or project.
+Start the front-half planning pipeline for a new feature or project. For the full end-to-end pipeline including build, QA, DevOps, release, and docs, see the `project-orchestration` skill — `/plan` is its planning slice.
 
 Run these phases in order, getting user approval between each:
 
