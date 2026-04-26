@@ -35,8 +35,8 @@ For format, archive policy, and TodoWrite pairing, see the `task-tracking` skill
 <!-- Most recent at the top. When this section exceeds ~30 entries, archive the oldest to docs/TASKS.archive.md. -->
 
 - [x] [TASK-6] `pr-check` skill references `project-orchestration` in its after-merge handoff
-  - closed via #21 (2026-04-26)
-  - depends-on: stacked on #19
+  - closed via #22 (2026-04-26)
+  - notes: PR #21 originally authored this work but merged into its parent branch (`feat/project-scaffolding-bootstrap-tasks-md`) instead of `main` due to a stacked-PR mishap. Re-landed on `main` via #22.
 
 - [x] [TASK-5] Have `project-scaffolding` call `task-tracking:bootstrap` on new projects
   - closed via #19 (2026-04-26)
