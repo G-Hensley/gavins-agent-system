@@ -27,12 +27,16 @@ For format, archive policy, and TodoWrite pairing, see the `task-tracking` skill
 - [ ] [TASK-3] Stranger-fork-readiness — CLAUDE.md split, agent-memory exclusion, README tone
   - notes: multi-PR effort. See `improvements/system/stranger-fork-readiness.md` for the full proposal. Touches CLAUDE.md, README, agent-memory/ tracking, possibly install.sh. Probably 3–4 PRs.
 
-- [ ] [TASK-4] Eval freshness — re-run Tier 2 + Tier 4
-  - notes: evals dated 2026-04-03/04. Lots has shipped since: rules, hooks (JSON channel), genericization, orchestration skills, project-manager agent. Re-run before claiming system-stable. See `evals/run-eval.sh`.
+- [ ] [TASK-7] Refresh Tier 4 eval rubric to cover orchestration-era patterns
+  - notes: surfaced by TASK-4 audit (2026-04-26). The current `evals/tier-4-full-workflow/task-manager-app/eval-criteria.md` predates PRs #14–22 and doesn't check for: per-task PR rhythm in Stage 7, `docs/TASKS.md` bootstrap+maintenance, `project-manager` dispatching at phase boundaries, `codex-plan-review` invocation when Stage 5 plan touches auth/DB/API, `pr-check` after-merge handoff, or `project-orchestration` as the conductor. Refresh rubric, then mechanical re-run becomes worth ~$30–100+.
 
 ## Done
 
 <!-- Most recent at the top. When this section exceeds ~30 entries, archive the oldest to docs/TASKS.archive.md. -->
+
+- [x] [TASK-4] Eval freshness — audit pass complete
+  - closed via #24 (2026-04-26)
+  - notes: audit-only — no mechanical re-runs (would have cost $50–150 against a rubric that's stale for Tier 4). Tier 2 = pass-by-inspection (LOW regression risk). Tier 4 deferred to TASK-7 (rubric refresh first). See `evals/AUDIT-2026-04-26.md` and `docs/STATUS.md` "Freshness Audit (2026-04-26)" section.
 
 - [x] [TASK-6] `pr-check` skill references `project-orchestration` in its after-merge handoff
   - closed via #22 (2026-04-26)
