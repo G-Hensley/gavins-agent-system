@@ -66,7 +66,8 @@ Use these agents proactively — don't wait for me to ask:
 
 | Situation | Dispatch |
 |---|---|
-| New project/feature ideation | Use `brainstorming` skill, then `product-manager` agent |
+| New project/feature ideation | Use `brainstorming` skill, then `product-manager` agent (one-shot PRD) |
+| Ongoing PM during a project | `project-manager` agent (Haiku) — TASKS.md sweeps, blockers, status, release notes; dispatch at phase boundaries and after PR merges |
 | System design needed | `architect` agent (Opus) + `code-explorer` agents for research |
 | UI/UX work before coding | `uiux-designer` agent (Opus) — creates design system FIRST |
 | Building backend code | `backend-engineer` agent (Opus) |
