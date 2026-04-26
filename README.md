@@ -4,7 +4,7 @@ A portable, version-controlled configuration of Claude Code skills, agents, comm
 
 ## What This Is
 
-This repository packages Gavin Hensley's complete Claude Code environment — 37 reusable skills, 24 specialist agents, 12 path-scoped rules, 8 enforcement hooks, 7 slash commands, persistent agent memory, and global Claude instructions. Everything is designed for API security, CLI tooling, backend/frontend development, and multi-agent automation.
+This repository packages Gavin Hensley's complete Claude Code environment — 37 reusable skills, 25 specialist agents, 12 path-scoped rules, 8 enforcement hooks, 7 slash commands, persistent agent memory, and global Claude instructions. Everything is designed for API security, CLI tooling, backend/frontend development, and multi-agent automation.
 
 Instead of scattering configuration across machines, this system is:
 - **Version-controlled** — Every skill, agent, and setting is in git. Review changes, rollback mistakes, share improvements.
@@ -16,7 +16,7 @@ Instead of scattering configuration across machines, this system is:
 
 ```
 skills/              # 37 reusable skills (each with SKILL.md and optional references/)
-agents/              # 24 specialist agents (prompts + configuration)
+agents/              # 25 specialist agents (prompts + configuration)
 commands/            # 7 slash commands (/git-health-check, /improve, /plan, /pr-check, /review, /setup, /status)
 rules/               # 12 path-scoped rules (glob-activated domain instructions)
 agent-memory/        # Persistent learnings per agent (loaded per session)
@@ -160,7 +160,8 @@ Each agent is a Claude Opus session with a specific domain and persistent memory
 | `implementer` | Multi-task work | Coordinating feature implementation across areas |
 | `uiux-designer` | Design systems | Creating design systems, wireframes, component specs |
 | `architect` | System design | Large-scale architecture, trade-offs, scalability |
-| `product-manager` | Product work | Roadmaps, requirements, prioritization |
+| `product-manager` | Product work | One-shot PRD writing, roadmaps, scoping at project kickoff |
+| `project-manager` | Ongoing PM | TASKS.md sweeps, status reports, blocker logging, release notes (Haiku) |
 | `backend-security-reviewer` | Backend security | Reviewing auth, input validation, APIs |
 | `frontend-security-reviewer` | Frontend security | Reviewing CSP, XSS, state management |
 | `cloud-security-reviewer` | Cloud infrastructure | Reviewing IAM, networking, data protection |

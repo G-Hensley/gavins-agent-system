@@ -4,7 +4,7 @@ Ambient context loaded alongside CLAUDE.md. This is what a new team member needs
 
 ## What This Repository Is
 
-This is the complete Claude Code environment for Gavin Hensley — 37 reusable skills, 24 specialist agents, 12 path-scoped rules, 8 enforcement hooks, 7 slash commands, and persistent agent memory. It packages an entire AI assistant "brain" as portable, version-controlled infrastructure.
+This is the complete Claude Code environment for Gavin Hensley — 37 reusable skills, 25 specialist agents, 12 path-scoped rules, 8 enforcement hooks, 7 slash commands, and persistent agent memory. It packages an entire AI assistant "brain" as portable, version-controlled infrastructure.
 
 The system separates cleanly:
 - **This repo** — Skills, agents, commands, configuration (your AI assistant's rules and knowledge)
@@ -119,7 +119,7 @@ When dispatching, check if a skill covers it before creating a new agent session
 
 ```
 skills/              # 36 domains (each: SKILL.md + optional references/)
-agents/              # 24 specialist agents (Markdown prompt format)
+agents/              # 25 specialist agents (Markdown prompt format)
 commands/            # 7 slash commands (/git-health-check, /improve, /plan, /pr-check, /review, /setup, /status)
 rules/               # 12 path-scoped rules (glob-activated domain instructions)
 agent-memory/        # Persistent learnings per agent
@@ -173,7 +173,8 @@ Write: what you observed, why it helps, concrete proposal. The maintainer review
 | Agent | Role | Dispatch When |
 |-------|------|---------------|
 | `architect` | System design | Designing components, data models, APIs |
-| `product-manager` | Requirements | Writing PRDs, roadmaps, scoping |
+| `product-manager` | Requirements | One-shot PRD writing at project kickoff |
+| `project-manager` | Ongoing PM | TASKS.md sweeps, status reports, blockers, release notes |
 | `backend-engineer` | Server logic | Building APIs, services, databases |
 | `frontend-engineer` | UI code | Building React, Next.js, components |
 | `database-engineer` | Schema/queries | Designing schemas, writing SQL |
