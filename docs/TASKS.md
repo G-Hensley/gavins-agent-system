@@ -35,7 +35,7 @@ For format, archive policy, and TodoWrite pairing, see the `task-tracking` skill
 <!-- Most recent at the top. When this section exceeds ~30 entries, archive the oldest to docs/TASKS.archive.md. -->
 
 - [x] [TASK-4] Eval freshness — audit pass complete
-  - closed via #23 (2026-04-26)
+  - closed via #24 (2026-04-26)
   - notes: audit-only — no mechanical re-runs (would have cost $50–150 against a rubric that's stale for Tier 4). Tier 2 = pass-by-inspection (LOW regression risk). Tier 4 deferred to TASK-7 (rubric refresh first). See `evals/AUDIT-2026-04-26.md` and `docs/STATUS.md` "Freshness Audit (2026-04-26)" section.
 
 - [x] [TASK-6] `pr-check` skill references `project-orchestration` in its after-merge handoff
