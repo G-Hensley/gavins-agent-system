@@ -1,7 +1,7 @@
 ---
 name: project-scaffolding
-description: Create project-level CLAUDE.md and CONTEXT.md before writing any code. Use after brainstorming/planning converges on a direction and before implementation begins — when transitioning from "what to build" to "building it". Also use when starting work in a new repo that lacks these files, or when context has drifted across sessions.
-last_verified: 2026-04-06
+description: Create project-level CLAUDE.md, CONTEXT.md, and bootstrap docs/TASKS.md before writing any code. Use after brainstorming/planning converges on a direction and before implementation begins — when transitioning from "what to build" to "building it". Also use when starting work in a new repo that lacks these files, or when context has drifted across sessions.
+last_verified: 2026-04-26
 ---
 
 # Project Scaffolding
@@ -94,9 +94,19 @@ CONTEXT.md is **ambient knowledge** — what a new session or agent needs to und
 - Move resolved questions to "Key Decisions" when answered
 - This is the file to update at session boundaries when context might be lost
 
-### 4. Create Supporting Files (If Needed)
+### 4. Bootstrap docs/TASKS.md
 
-For larger projects, CLAUDE.md and CONTEXT.md may not be enough:
+Call the `task-tracking` skill (Phase 1: Bootstrap) to create `docs/TASKS.md` from its template. This is not optional and not gated on project complexity — every project gets a TASKS.md from the start, even if it's only seeded with one or two tasks. The file is the cross-session canonical state for all subsequent work.
+
+```bash
+mkdir -p docs && cp <agent-system-root>/skills/task-tracking/references/tasks-template.md docs/TASKS.md
+```
+
+After bootstrap, seed it with the first task or two from the implementation plan. Don't leave it empty — an empty TASKS.md says nothing about whether the project has been planned.
+
+### 5. Create Supporting Files (If Needed)
+
+For larger projects, CLAUDE.md, CONTEXT.md, and TASKS.md may not be enough:
 
 - **`docs/plans/*.md`** — implementation plans (from `writing-plans` skill)
 - **`docs/adr/*.md`** — architecture decision records
@@ -104,11 +114,12 @@ For larger projects, CLAUDE.md and CONTEXT.md may not be enough:
 
 Only create these when the project's complexity demands it. YAGNI.
 
-### 5. Verify Before Proceeding
+### 6. Verify Before Proceeding
 
 Before handing off to implementation:
 - [ ] CLAUDE.md has exact build/test/run commands
 - [ ] CONTEXT.md reflects the current plan and architecture
+- [ ] docs/TASKS.md exists with at least the first task seeded
 - [ ] Stack, structure, and constraints are documented
 - [ ] A fresh agent session could pick this up without prior conversation context
 
