@@ -125,6 +125,7 @@ Last updated: 2026-04-22
 | 31 | Git health check | Done | skills/git-health-check/, commands/git-health-check.md — detects HEAD truncation, .corrupt.backup, dangling locks |
 | 32 | PR check (rename+rewrite of resolve-pr-comments) | Done | skills/pr-check/, commands/pr-check.md, scripts/hooks/pr-push-nudge.sh — stale-detection, CI/merge state, thematic commits, Copilot retrigger |
 | 33 | Tier-1 friction fixes | Done | CLAUDE.md Windows section, rules/reference-reading.md, scripts/hooks/file-size-cap.sh + gh-account-guard.sh |
+| 34 | Frontend-design reference expansion | Done | 16 new references in skills/frontend-design/references/ (motion, state, disclosure, ux-writing, emotional, tokens, forms, navigation, dataviz, performance, trust, modern-css, heuristics, atomic, accessibility, anti-patterns); SKILL.md + uiux-designer agent updated to consume them |
 
 ## What's Left
 
